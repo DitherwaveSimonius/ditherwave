@@ -39,7 +39,7 @@ impl EffectStack {
         for node in self.nodes.iter().filter(|n| n.enabled) {
             let effect = registry
                 .create(&node.effect_key)
-                .ok_or_else(|| EffectError::InvalidParam(node.effect_key.clone()))?;
+                .ok_or_else(|| EffectError::UnknownEffect(node.effect_key.clone()))?;
             let ctx = EffectContext {
                 rng_seed,
                 preview: false,

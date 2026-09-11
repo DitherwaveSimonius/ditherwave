@@ -239,6 +239,42 @@ fn export_image(path: String, state: tauri::State<AppState>) -> Result<(), Strin
     io::save_raster(&rendered, Path::new(&path)).map_err(|e| e.to_string())
 }
 
+#[tauri::command]
+fn export_recipe(path: String, state: tauri::State<AppState>) -> Result<(), String> {
+    let stack = state.stack.lock().unwrap();
+    let name = Path::new(&path)
+        .file_stem()
+        .map(|s| s.to_string_lossy().into_owned())
+        .unwrap_or_else(|| "ditheros recipe".to_string());
+    let recipe = ditheros_recipe::Recipe::from_stack(name, &stack);
+    recipe.save(Path::new(&path)).map_err(|e| e.to_string())
+}
+
+/// Response to loading a recipe: the desktop UI needs both the reconstructed
+/// node list (to repopulate the "Effects" panel) and a rendered preview.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct StackPayload {
+    nodes: Vec<EffectNode>,
+    image: ImagePayload,
+}
+
+#[tauri::command]
+fn import_recipe(path: String, state: tauri::State<AppState>) -> Result<StackPayload, String> {
+    let recipe = ditheros_recipe::Recipe::load(Path::new(&path)).map_err(|e| e.to_string())?;
+    let new_stack = recipe.to_stack();
+
+    let original = state.original.lock().unwrap();
+    let original = original.as_ref().ok_or("no image open")?;
+    let mut cache = state.cache.lock().unwrap();
+    let rendered = render_stack(original, &new_stack, &state.registry, &mut cache)?;
+    let image = to_payload(&rendered)?;
+    let nodes = new_stack.nodes.clone();
+    *state.stack.lock().unwrap() = new_stack;
+
+    Ok(StackPayload { nodes, image })
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -253,7 +289,9 @@ pub fn run() {
             list_effects,
             open_image,
             set_stack,
-            export_image
+            export_image,
+            export_recipe,
+            import_recipe
         ])
         .setup(|app| {
             if cfg!(debug_assertions) {

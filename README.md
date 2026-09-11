@@ -13,11 +13,12 @@ Boy"/"DitherBoy" or a close variant**, to avoid colliding with that product's na
 
 ## Status
 
-Milestones M0-M3 done: raster (PNG/JPEG) and RAW photo dithering with a
+Milestones M0-M4 done: raster (PNG/JPEG) and RAW photo dithering with a
 non-destructive, reorderable effect stack. 14 built-in algorithms (7
 error-diffusion, 3 ordered/Bayer, 3 pattern/clustered-dot halftone, 1
-palette-map with 2 built-in palettes + k-means extraction). No SVG/plugins/CLI
-yet — see the roadmap below.
+palette-map with 2 built-in palettes + k-means extraction). A stack built in
+the desktop app can be saved as a TOML recipe and replayed over a whole
+folder with `ditheros-cli`. No SVG/plugins yet — see the roadmap below.
 
 ## Project layout
 
@@ -51,6 +52,9 @@ cargo fmt --all
 cd apps/desktop
 npm install
 npm run tauri dev
+
+# batch-apply a recipe (exported from the desktop app's "Save Recipe…") to a folder
+cargo run -p ditheros-cli -- --recipe my-look.toml --input ./photos --output ./out
 ```
 
 ## Roadmap

@@ -127,6 +127,30 @@
     })
   }
 
+  function exportRecipe() {
+    withBusy(async () => {
+      const path = await save({
+        defaultPath: 'recipe.toml',
+        filters: [{ name: 'Recipe', extensions: ['toml'] }],
+      })
+      if (!path) return
+      await invoke('export_recipe', { path })
+    })
+  }
+
+  function importRecipe() {
+    withBusy(async () => {
+      const path = await open({
+        multiple: false,
+        filters: [{ name: 'Recipe', extensions: ['toml'] }],
+      })
+      if (!path || Array.isArray(path)) return
+      const result = await invoke<{ nodes: EffectNode[]; image: ImagePayload }>('import_recipe', { path })
+      stack = result.nodes
+      previewSrc = `data:image/png;base64,${result.image.pngBase64}`
+    })
+  }
+
   function addNode() {
     const effect = effectByKey(addEffectKey)
     if (!effect) return
@@ -175,6 +199,9 @@
     {/each}
   </select>
   <button onclick={addNode} disabled={busy || !hasImage || !addEffectKey}>Add effect</button>
+  <span class="spacer"></span>
+  <button onclick={importRecipe} disabled={busy || !hasImage}>Load Recipe…</button>
+  <button onclick={exportRecipe} disabled={busy || stack.length === 0}>Save Recipe…</button>
   <button onclick={exportImage} disabled={busy || !hasImage}>Export…</button>
   {#if error}<span class="error">{error}</span>{/if}
 </div>
@@ -283,9 +310,12 @@
     opacity: 0.5;
   }
 
+  .spacer {
+    flex: 1;
+  }
+
   .error {
     color: #f87171;
-    margin-left: auto;
     font-size: 12px;
   }
 

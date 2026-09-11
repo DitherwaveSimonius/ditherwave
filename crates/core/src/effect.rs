@@ -6,6 +6,8 @@ use std::collections::HashMap;
 pub enum EffectError {
     #[error("invalid parameter '{0}'")]
     InvalidParam(String),
+    #[error("unknown effect '{0}'")]
+    UnknownEffect(String),
     #[error("cancelled")]
     Cancelled,
 }
