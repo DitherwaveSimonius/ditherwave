@@ -26,7 +26,7 @@ fn every_builtin_effect_runs_end_to_end_on_a_real_image() {
     std::fs::create_dir_all(&out_dir).unwrap();
 
     for key in registry.keys() {
-        let effect = registry.create(key).unwrap();
+        let effect = registry.get(key).unwrap();
         let params = Default::default();
 
         let output = effect

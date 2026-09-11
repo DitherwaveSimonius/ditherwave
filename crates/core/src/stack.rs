@@ -38,7 +38,7 @@ impl EffectStack {
         let no_cancel = || false;
         for node in self.nodes.iter().filter(|n| n.enabled) {
             let effect = registry
-                .create(&node.effect_key)
+                .get(&node.effect_key)
                 .ok_or_else(|| EffectError::UnknownEffect(node.effect_key.clone()))?;
             let ctx = EffectContext {
                 rng_seed,
@@ -90,7 +90,7 @@ mod tests {
 
         let via_stack = stack.run(&input, &registry, 0).unwrap();
 
-        let threshold = registry.create("pattern.threshold").unwrap();
+        let threshold = registry.get("pattern.threshold").unwrap();
         let no_cancel = || false;
         let ctx = crate::effect::EffectContext {
             rng_seed: 0,

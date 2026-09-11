@@ -1,0 +1,16 @@
+[plugin]
+key = "examples.invert"
+display_name = "Invert (example plugin)"
+category = "special"
+version = "0.1.0"
+author = "ditheros contributors"
+wasm = "invert_plugin.wasm"
+
+[[params]]
+key = "strength"
+display_name = "Strength"
+kind = "float"
+min = 0.0
+max = 1.0
+step = 0.01
+default = 1.0

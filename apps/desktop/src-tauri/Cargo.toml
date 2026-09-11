@@ -18,6 +18,7 @@ tauri-build = { version = "2.6.3", features = [] }
 
 [dependencies]
 ditheros-core.workspace = true
+ditheros-plugin-host.workspace = true
 ditheros-raw.workspace = true
 ditheros-recipe.workspace = true
 ditheros-vector.workspace = true

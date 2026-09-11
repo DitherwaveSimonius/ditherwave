@@ -10,6 +10,7 @@ members = [
     "apps/cli",
     "apps/desktop/src-tauri",
     "sdk/plugin-sdk-rust",
+    "examples/plugins/invert",
 ]
 
 [workspace.package]

@@ -6,6 +6,7 @@ license.workspace = true
 
 [dependencies]
 ditheros-core.workspace = true
+ditheros-plugin-host.workspace = true
 ditheros-raw.workspace = true
 ditheros-recipe.workspace = true
 clap = { version = "4", features = ["derive"] }

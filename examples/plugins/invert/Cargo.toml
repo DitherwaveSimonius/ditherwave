@@ -1,0 +1,11 @@
+[package]
+name = "invert_plugin"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+ditheros-plugin-sdk = { path = "../../../sdk/plugin-sdk-rust" }

@@ -122,7 +122,7 @@ fn render_stack(
         }
 
         let effect = registry
-            .create(&node.effect_key)
+            .get(&node.effect_key)
             .ok_or_else(|| format!("unknown effect '{}'", node.effect_key))?;
         let ctx = EffectContext {
             rng_seed: 0,
@@ -147,7 +147,7 @@ fn list_effects(state: tauri::State<AppState>) -> Vec<EffectDescriptor> {
     state
         .registry
         .keys()
-        .filter_map(|key| state.registry.create(key))
+        .filter_map(|key| state.registry.get(key))
         .map(|effect| EffectDescriptor {
             key: effect.key(),
             display_name: effect.display_name(),
@@ -292,12 +292,26 @@ fn import_recipe(path: String, state: tauri::State<AppState>) -> Result<StackPay
     Ok(StackPayload { nodes, image })
 }
 
+/// Built-in effects plus any WASM plugins found in the user's plugins
+/// directory (`~/Library/Application Support/ditheros/plugins` on macOS).
+/// A plugin that fails to load is skipped (logged to stderr by
+/// `load_plugins_dir`) rather than failing app startup.
+fn build_registry() -> Registry {
+    let mut registry = Registry::with_builtins();
+    if let Some(dir) = ditheros_plugin_host::default_plugins_dir() {
+        for plugin in ditheros_plugin_host::load_plugins_dir(&dir) {
+            registry.register(plugin.key(), plugin);
+        }
+    }
+    registry
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .manage(AppState {
-            registry: Registry::with_builtins(),
+            registry: build_registry(),
             original: Mutex::new(None),
             stack: Mutex::new(EffectStack::default()),
             cache: Mutex::new(Vec::new()),
@@ -386,8 +400,8 @@ mod tests {
 
     fn counting_registry() -> Registry {
         let mut registry = Registry::new();
-        registry.register("test.a", || Box::new(CountingA));
-        registry.register("test.b", || Box::new(CountingB));
+        registry.register("test.a", Box::new(CountingA));
+        registry.register("test.b", Box::new(CountingB));
         registry
     }
 

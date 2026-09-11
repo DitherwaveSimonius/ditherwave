@@ -13,13 +13,16 @@ Boy"/"DitherBoy" or a close variant**, to avoid colliding with that product's na
 
 ## Status
 
-Milestones M0-M5 done: raster (PNG/JPEG), RAW, and now SVG input, all through
-the same non-destructive, reorderable effect stack. 14 built-in algorithms (7
+Milestones M0-M6 done: raster (PNG/JPEG), RAW, and SVG input, all through the
+same non-destructive, reorderable effect stack. 14 built-in algorithms (7
 error-diffusion, 3 ordered/Bayer, 3 pattern/clustered-dot halftone, 1
 palette-map with 2 built-in palettes + k-means extraction). A stack built in
 the desktop app can be saved as a TOML recipe and replayed over a whole
 folder with `ditheros-cli`, or exported as a "dot emission" vector SVG for
-print/embroidery. No plugin system yet — see the roadmap below.
+print/embroidery. Custom algorithms can be loaded as sandboxed WASM plugins
+(see `examples/plugins/`) — they show up in the effect list and work in
+stacks/recipes exactly like a built-in. Not done yet: Windows packaging,
+animation/video dithering — see the roadmap below.
 
 ## Project layout
 
@@ -35,7 +38,7 @@ apps/
   desktop/      Tauri (Rust + Svelte) desktop app
   cli/          batch/folder processing binary
 sdk/plugin-sdk-rust/   template for Rust-based plugin authors
-examples/plugins/      reference plugins (added starting M6)
+examples/plugins/      reference WASM plugins (see examples/plugins/README.md)
 ```
 
 ## Development
@@ -57,6 +60,10 @@ npm run tauri dev
 # batch-apply a recipe (exported from the desktop app's "Save Recipe…") to a folder
 cargo run -p ditheros-cli -- --recipe my-look.toml --input ./photos --output ./out
 ```
+
+Both the desktop app and the CLI load WASM plugins from
+`~/Library/Application Support/ditheros/plugins` (macOS) at startup — see
+`examples/plugins/README.md` for the plugin format and how to build one.
 
 ## Roadmap
 

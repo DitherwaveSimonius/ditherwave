@@ -82,6 +82,20 @@ fn process_one(
     io::save_raster(&rendered, &out_path).map_err(|e| e.to_string())
 }
 
+/// Built-in effects plus any WASM plugins found in the user's plugins
+/// directory (same location the desktop app loads from), so a recipe using
+/// a plugin effect works identically via the CLI. A plugin that fails to
+/// load is skipped (logged to stderr) rather than aborting the whole run.
+fn build_registry() -> Registry {
+    let mut registry = Registry::with_builtins();
+    if let Some(dir) = ditheros_plugin_host::default_plugins_dir() {
+        for plugin in ditheros_plugin_host::load_plugins_dir(&dir) {
+            registry.register(plugin.key(), plugin);
+        }
+    }
+    registry
+}
+
 fn main() {
     let cli = Cli::parse();
 
@@ -120,7 +134,7 @@ fn main() {
         std::process::exit(1);
     }
 
-    let registry = Registry::with_builtins();
+    let registry = build_registry();
     let bar = ProgressBar::new(inputs.len() as u64);
     bar.set_style(
         ProgressStyle::with_template("{bar:40.cyan/blue} {pos}/{len} {msg}")

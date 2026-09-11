@@ -6,4 +6,6 @@ license.workspace = true
 
 [dependencies]
 ditheros-plugin-api.workspace = true
+extism-pdk = "1.4.1"
 serde.workspace = true
+base64 = "0.22"

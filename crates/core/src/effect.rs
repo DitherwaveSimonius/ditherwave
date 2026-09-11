@@ -10,6 +10,8 @@ pub enum EffectError {
     UnknownEffect(String),
     #[error("cancelled")]
     Cancelled,
+    #[error("plugin error: {0}")]
+    Plugin(String),
 }
 
 pub type EffectResult<T> = Result<T, EffectError>;
