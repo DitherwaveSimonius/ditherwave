@@ -14,6 +14,15 @@ impl Registry {
         Self::default()
     }
 
+    /// A registry pre-populated with every algorithm built into `ditheros-core`.
+    pub fn with_builtins() -> Self {
+        let mut registry = Self::new();
+        for (key, ctor) in crate::algorithms::builtins() {
+            registry.register(key, ctor);
+        }
+        registry
+    }
+
     pub fn register(&mut self, key: &'static str, ctor: fn() -> Box<dyn Effect>) {
         self.constructors.insert(key, ctor);
     }

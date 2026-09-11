@@ -22,13 +22,37 @@ pub enum EffectCategory {
     Color,
 }
 
+/// A [`ParamDef`]'s type, range and default, kept to primitive types so schemas can
+/// be plain `const`/`static` data — the actual runtime values in a [`ParamValues`]
+/// map are still full [`Value`]s, since those come from JSON (UI, recipes,
+/// plugins). Carrying `min`/`max`/`step` lets the UI generate slider controls
+/// directly from the schema instead of hardcoding per-effect knowledge.
+#[derive(Debug, Clone, Copy)]
+pub enum ParamKind {
+    Bool {
+        default: bool,
+    },
+    IntRange {
+        min: i64,
+        max: i64,
+        step: i64,
+        default: i64,
+    },
+    FloatRange {
+        min: f64,
+        max: f64,
+        step: f64,
+        default: f64,
+    },
+}
+
 /// Describes one parameter an [`Effect`] accepts, used both to auto-generate UI
 /// controls and to validate recipe/plugin input.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct ParamDef {
     pub key: &'static str,
     pub display_name: &'static str,
-    pub default: Value,
+    pub kind: ParamKind,
 }
 
 /// Concrete parameter values for one [`EffectNode`], keyed by [`ParamDef::key`].
