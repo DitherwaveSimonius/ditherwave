@@ -18,6 +18,7 @@ tauri-build = { version = "2.6.3", features = [] }
 
 [dependencies]
 ditheros-core.workspace = true
+ditheros-raw.workspace = true
 ditheros-recipe.workspace = true
 serde_json.workspace = true
 serde.workspace = true

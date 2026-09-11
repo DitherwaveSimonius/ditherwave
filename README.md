@@ -13,10 +13,11 @@ Boy"/"DitherBoy" or a close variant**, to avoid colliding with that product's na
 
 ## Status
 
-Milestones M0-M2 done: raster-only (PNG/JPEG) dithering with a non-destructive,
-reorderable effect stack. 14 built-in algorithms (7 error-diffusion, 3 ordered/Bayer,
-3 pattern/clustered-dot halftone, 1 palette-map with 2 built-in palettes + k-means
-extraction). No RAW/SVG/plugins/CLI yet — see the roadmap below.
+Milestones M0-M3 done: raster (PNG/JPEG) and RAW photo dithering with a
+non-destructive, reorderable effect stack. 14 built-in algorithms (7
+error-diffusion, 3 ordered/Bayer, 3 pattern/clustered-dot halftone, 1
+palette-map with 2 built-in palettes + k-means extraction). No SVG/plugins/CLI
+yet — see the roadmap below.
 
 ## Project layout
 
@@ -68,3 +69,9 @@ npm run tauri dev
 
 Licensed under either of [Apache License, Version 2.0](LICENSE-APACHE) or
 [MIT license](LICENSE-MIT) at your option.
+
+`crates/raw` depends on [`imagepipe`](https://crates.io/crates/imagepipe)
+(LGPL-3.0-only) for RAW decoding, used unmodified as an ordinary Cargo
+dependency — this doesn't require the rest of the project to be
+LGPL/GPL-licensed, but is worth a proper compliance check (attribution,
+ability to relink/replace that component) before a public binary release.

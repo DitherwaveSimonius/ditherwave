@@ -201,7 +201,12 @@ fn list_effects(state: tauri::State<AppState>) -> Vec<EffectDescriptor> {
 
 #[tauri::command]
 fn open_image(path: String, state: tauri::State<AppState>) -> Result<ImagePayload, String> {
-    let working = io::open_raster(Path::new(&path)).map_err(|e| e.to_string())?;
+    let path = Path::new(&path);
+    let working = if ditheros_raw::is_raw_extension(path) {
+        ditheros_raw::open_raw(path).map_err(|e| e.to_string())?
+    } else {
+        io::open_raster(path).map_err(|e| e.to_string())?
+    };
     let payload = to_payload(&working)?;
     *state.original.lock().unwrap() = Some(working);
     *state.stack.lock().unwrap() = EffectStack::default();

@@ -82,7 +82,31 @@
     withBusy(async () => {
       const path = await open({
         multiple: false,
-        filters: [{ name: 'Images', extensions: ['png', 'jpg', 'jpeg'] }],
+        filters: [
+          {
+            name: 'All supported',
+            extensions: [
+              'png',
+              'jpg',
+              'jpeg',
+              'cr2',
+              'cr3',
+              'nef',
+              'arw',
+              'raf',
+              'rw2',
+              'orf',
+              'dng',
+              'pef',
+              'srw',
+            ],
+          },
+          { name: 'Images', extensions: ['png', 'jpg', 'jpeg'] },
+          {
+            name: 'RAW Photos',
+            extensions: ['cr2', 'cr3', 'nef', 'arw', 'raf', 'rw2', 'orf', 'dng', 'pef', 'srw'],
+          },
+        ],
       })
       if (!path || Array.isArray(path)) return
       const payload = await invoke<ImagePayload>('open_image', { path })
