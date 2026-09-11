@@ -1,7 +1,9 @@
 pub mod color;
 pub mod error_diffusion;
+pub mod glitch;
 pub mod ordered;
 pub mod pattern;
+pub mod special;
 
 use crate::effect::{Effect, ParamDef, ParamKind, ParamValues};
 use crate::image::WorkingImage;
@@ -203,6 +205,11 @@ pub fn builtins() -> Vec<EffectCtor> {
             Box::new(pattern::ClusteredDot8x8)
         }),
         (color::PaletteMap::KEY, || Box::new(color::PaletteMap)),
+        (glitch::ChromaticAberration::KEY, || {
+            Box::new(glitch::ChromaticAberration)
+        }),
+        (glitch::Scanlines::KEY, || Box::new(glitch::Scanlines)),
+        (special::EpsilonGlow::KEY, || Box::new(special::EpsilonGlow)),
     ]
 }
 
