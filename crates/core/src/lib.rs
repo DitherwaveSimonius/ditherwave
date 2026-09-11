@@ -2,6 +2,7 @@ pub mod algorithms;
 pub mod effect;
 pub mod image;
 pub mod io;
+pub mod palette;
 pub mod registry;
 pub mod stack;
 
@@ -11,5 +12,6 @@ pub use effect::{
 };
 pub use image::{ColorSpace, WorkingImage};
 pub use io::IoError;
+pub use palette::Palette;
 pub use registry::Registry;
 pub use stack::{EffectNode, EffectStack};

@@ -5,7 +5,7 @@
 //! `open_image`/`apply_effect`/`export_image` commands are thin wrappers
 //! around exactly these `ditheros_core` calls.
 
-use ditheros_core::{io, EffectContext, Registry};
+use ditheros_core::{io, EffectContext, EffectNode, EffectStack, Registry};
 use std::path::Path;
 
 #[test]
@@ -69,4 +69,47 @@ fn every_builtin_effect_runs_end_to_end_on_a_real_image() {
             (output.width, output.height)
         );
     }
+}
+
+#[test]
+fn a_multi_node_stack_runs_end_to_end_on_a_real_image() {
+    // Mirrors what the desktop app's "Effects" panel actually builds: a
+    // palette-map node feeding into an error-diffusion node.
+    let fixture = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/sample.png");
+    let input = io::open_raster(&fixture).expect("fixture should decode");
+    let registry = Registry::with_builtins();
+
+    let stack = EffectStack {
+        nodes: vec![
+            EffectNode {
+                id: "1".into(),
+                effect_key: "color.palette_map".into(),
+                params: [
+                    ("palette".to_string(), serde_json::json!("pico8")),
+                    ("dither".to_string(), serde_json::json!(false)),
+                ]
+                .into_iter()
+                .collect(),
+                enabled: true,
+            },
+            EffectNode {
+                id: "2".into(),
+                effect_key: "error_diffusion.floyd_steinberg".into(),
+                params: [("levels".to_string(), serde_json::json!(4))]
+                    .into_iter()
+                    .collect(),
+                enabled: true,
+            },
+        ],
+    };
+
+    let output = stack
+        .run(&input, &registry, 0)
+        .expect("stack should run end-to-end");
+    assert_eq!((output.width, output.height), (input.width, input.height));
+    assert!(output.pixels != input.pixels);
+
+    let out_dir = std::env::temp_dir().join("ditheros-core-pipeline-test");
+    std::fs::create_dir_all(&out_dir).unwrap();
+    io::save_raster(&output, &out_dir.join("stack_palette_then_dither.png")).unwrap();
 }

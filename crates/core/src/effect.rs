@@ -44,6 +44,12 @@ pub enum ParamKind {
         step: f64,
         default: f64,
     },
+    /// A fixed set of named options (rendered as a `<select>`), e.g. picking
+    /// which built-in palette to map an image against.
+    Choice {
+        options: &'static [&'static str],
+        default: &'static str,
+    },
 }
 
 /// Describes one parameter an [`Effect`] accepts, used both to auto-generate UI

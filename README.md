@@ -13,7 +13,10 @@ Boy"/"DitherBoy" or a close variant**, to avoid colliding with that product's na
 
 ## Status
 
-Early scaffolding (milestone M0). Not usable yet — see the roadmap below.
+Milestones M0-M2 done: raster-only (PNG/JPEG) dithering with a non-destructive,
+reorderable effect stack. 14 built-in algorithms (7 error-diffusion, 3 ordered/Bayer,
+3 pattern/clustered-dot halftone, 1 palette-map with 2 built-in palettes + k-means
+extraction). No RAW/SVG/plugins/CLI yet — see the roadmap below.
 
 ## Project layout
 

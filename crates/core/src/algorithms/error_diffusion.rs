@@ -25,7 +25,7 @@ const PARAMS: &[ParamDef] = &[LEVELS, SERPENTINE];
 /// neighbors. `(dx, dy, weight)` offsets are relative to the current pixel in
 /// left-to-right scan order; `weight`s should sum to 1.0 (Atkinson deliberately
 /// diffuses less than that, which is what gives it more contrast).
-fn diffuse(
+pub(crate) fn diffuse(
     input: &WorkingImage,
     kernel: &[(i32, i32, f32)],
     levels: u32,
@@ -67,94 +67,168 @@ fn diffuse(
     }
 }
 
-#[derive(Debug, Clone, Copy)]
-pub struct FloydSteinberg;
+macro_rules! error_diffusion_effect {
+    ($name:ident, $key:expr, $display:expr, $doc:expr, $kernel:expr) => {
+        #[doc = $doc]
+        #[derive(Debug, Clone, Copy)]
+        pub struct $name;
 
-impl FloydSteinberg {
-    pub const KEY: &'static str = "error_diffusion.floyd_steinberg";
-    const KERNEL: &'static [(i32, i32, f32)] = &[
+        impl $name {
+            pub const KEY: &'static str = $key;
+            pub(crate) const KERNEL: &'static [(i32, i32, f32)] = $kernel;
+        }
+
+        impl Effect for $name {
+            fn key(&self) -> &'static str {
+                Self::KEY
+            }
+
+            fn display_name(&self) -> &'static str {
+                $display
+            }
+
+            fn category(&self) -> EffectCategory {
+                EffectCategory::ErrorDiffusion
+            }
+
+            fn params_schema(&self) -> &'static [ParamDef] {
+                PARAMS
+            }
+
+            fn apply(
+                &self,
+                input: &WorkingImage,
+                params: &ParamValues,
+                _ctx: &EffectContext,
+            ) -> EffectResult<WorkingImage> {
+                let levels = param_i64(params, &LEVELS).clamp(2, 256) as u32;
+                let serpentine = param_bool(params, &SERPENTINE);
+                Ok(diffuse(input, Self::KERNEL, levels, serpentine))
+            }
+        }
+    };
+}
+
+error_diffusion_effect!(
+    FloydSteinberg,
+    "error_diffusion.floyd_steinberg",
+    "Floyd-Steinberg",
+    "The classic 1976 error-diffusion dither.",
+    &[
         (1, 0, 7.0 / 16.0),
         (-1, 1, 3.0 / 16.0),
         (0, 1, 5.0 / 16.0),
-        (1, 1, 1.0 / 16.0),
-    ];
-}
+        (1, 1, 1.0 / 16.0)
+    ]
+);
 
-impl Effect for FloydSteinberg {
-    fn key(&self) -> &'static str {
-        Self::KEY
-    }
-
-    fn display_name(&self) -> &'static str {
-        "Floyd-Steinberg"
-    }
-
-    fn category(&self) -> EffectCategory {
-        EffectCategory::ErrorDiffusion
-    }
-
-    fn params_schema(&self) -> &'static [ParamDef] {
-        PARAMS
-    }
-
-    fn apply(
-        &self,
-        input: &WorkingImage,
-        params: &ParamValues,
-        _ctx: &EffectContext,
-    ) -> EffectResult<WorkingImage> {
-        let levels = param_i64(params, &LEVELS).clamp(2, 256) as u32;
-        let serpentine = param_bool(params, &SERPENTINE);
-        Ok(diffuse(input, Self::KERNEL, levels, serpentine))
-    }
-}
-
-/// Bill Atkinson's dither for the original Macintosh: only diffuses 6/8 of the
-/// error (vs. Floyd-Steinberg's full error), which loses some shadow/highlight
-/// detail but gives noticeably higher-contrast, punchier output.
-#[derive(Debug, Clone, Copy)]
-pub struct Atkinson;
-
-impl Atkinson {
-    pub const KEY: &'static str = "error_diffusion.atkinson";
-    const KERNEL: &'static [(i32, i32, f32)] = &[
+error_diffusion_effect!(
+    Atkinson,
+    "error_diffusion.atkinson",
+    "Atkinson",
+    "Bill Atkinson's dither for the original Macintosh: only diffuses 6/8 of the \
+     error (vs. Floyd-Steinberg's full error), which loses some shadow/highlight \
+     detail but gives noticeably higher-contrast, punchier output.",
+    &[
         (1, 0, 1.0 / 8.0),
         (2, 0, 1.0 / 8.0),
         (-1, 1, 1.0 / 8.0),
         (0, 1, 1.0 / 8.0),
         (1, 1, 1.0 / 8.0),
         (0, 2, 1.0 / 8.0),
-    ];
-}
+    ]
+);
 
-impl Effect for Atkinson {
-    fn key(&self) -> &'static str {
-        Self::KEY
-    }
+error_diffusion_effect!(
+    JarvisJudiceNinke,
+    "error_diffusion.jarvis_judice_ninke",
+    "Jarvis-Judice-Ninke",
+    "Spreads error across a wider 3-row, 5-column neighborhood than \
+     Floyd-Steinberg, trading a softer, slightly blurrier look for fewer \
+     directional artifacts.",
+    &[
+        (1, 0, 7.0 / 48.0),
+        (2, 0, 5.0 / 48.0),
+        (-2, 1, 3.0 / 48.0),
+        (-1, 1, 5.0 / 48.0),
+        (0, 1, 7.0 / 48.0),
+        (1, 1, 5.0 / 48.0),
+        (2, 1, 3.0 / 48.0),
+        (-2, 2, 1.0 / 48.0),
+        (-1, 2, 3.0 / 48.0),
+        (0, 2, 5.0 / 48.0),
+        (1, 2, 3.0 / 48.0),
+        (2, 2, 1.0 / 48.0),
+    ]
+);
 
-    fn display_name(&self) -> &'static str {
-        "Atkinson"
-    }
+error_diffusion_effect!(
+    Stucki,
+    "error_diffusion.stucki",
+    "Stucki",
+    "A refinement of Jarvis-Judice-Ninke with sharper, less blurry output at a \
+     similar computational cost.",
+    &[
+        (1, 0, 8.0 / 42.0),
+        (2, 0, 4.0 / 42.0),
+        (-2, 1, 2.0 / 42.0),
+        (-1, 1, 4.0 / 42.0),
+        (0, 1, 8.0 / 42.0),
+        (1, 1, 4.0 / 42.0),
+        (2, 1, 2.0 / 42.0),
+        (-2, 2, 1.0 / 42.0),
+        (-1, 2, 2.0 / 42.0),
+        (0, 2, 4.0 / 42.0),
+        (1, 2, 2.0 / 42.0),
+        (2, 2, 1.0 / 42.0),
+    ]
+);
 
-    fn category(&self) -> EffectCategory {
-        EffectCategory::ErrorDiffusion
-    }
+error_diffusion_effect!(
+    Sierra,
+    "error_diffusion.sierra",
+    "Sierra",
+    "Frankie Sierra's 3-row filter: similar quality to Stucki/JJN with a \
+     smaller, cheaper kernel.",
+    &[
+        (1, 0, 5.0 / 32.0),
+        (2, 0, 3.0 / 32.0),
+        (-2, 1, 2.0 / 32.0),
+        (-1, 1, 4.0 / 32.0),
+        (0, 1, 5.0 / 32.0),
+        (1, 1, 4.0 / 32.0),
+        (2, 1, 2.0 / 32.0),
+        (-1, 2, 2.0 / 32.0),
+        (0, 2, 3.0 / 32.0),
+        (1, 2, 2.0 / 32.0),
+    ]
+);
 
-    fn params_schema(&self) -> &'static [ParamDef] {
-        PARAMS
-    }
+error_diffusion_effect!(
+    SierraLite,
+    "error_diffusion.sierra_lite",
+    "Sierra Lite",
+    "A tiny 2-pixel, 2-row Sierra variant: the cheapest error diffusion here, \
+     noticeably coarser-looking than the others.",
+    &[(1, 0, 2.0 / 4.0), (-1, 1, 1.0 / 4.0), (0, 1, 1.0 / 4.0)]
+);
 
-    fn apply(
-        &self,
-        input: &WorkingImage,
-        params: &ParamValues,
-        _ctx: &EffectContext,
-    ) -> EffectResult<WorkingImage> {
-        let levels = param_i64(params, &LEVELS).clamp(2, 256) as u32;
-        let serpentine = param_bool(params, &SERPENTINE);
-        Ok(diffuse(input, Self::KERNEL, levels, serpentine))
-    }
-}
+error_diffusion_effect!(
+    Burkes,
+    "error_diffusion.burkes",
+    "Burkes",
+    "A 2-row simplification of Stucki, dropping the third row for a cheaper \
+     kernel at a similar quality to Sierra.",
+    &[
+        (1, 0, 8.0 / 32.0),
+        (2, 0, 4.0 / 32.0),
+        (-2, 1, 2.0 / 32.0),
+        (-1, 1, 4.0 / 32.0),
+        (0, 1, 8.0 / 32.0),
+        (1, 1, 4.0 / 32.0),
+        (2, 1, 2.0 / 32.0),
+    ]
+);
 
 #[cfg(test)]
 mod tests {
@@ -162,40 +236,80 @@ mod tests {
     use crate::algorithms::test_util::{no_cancel, solid_image};
     use std::collections::HashMap;
 
+    const ALL: &[&dyn Effect] = &[
+        &FloydSteinberg,
+        &Atkinson,
+        &JarvisJudiceNinke,
+        &Stucki,
+        &Sierra,
+        &SierraLite,
+        &Burkes,
+    ];
+
     #[test]
     fn preserves_dimensions_and_quantizes_to_binary_levels() {
         let input = solid_image(8, 8, 0.5);
         let ctx = no_cancel();
-        for effect in [&FloydSteinberg as &dyn Effect, &Atkinson as &dyn Effect] {
+        for effect in ALL {
             let out = effect.apply(&input, &HashMap::new(), &ctx).unwrap();
-            assert_eq!((out.width, out.height), (8, 8));
-            assert!(out.pixels[0..3].iter().all(|&c| c == 0.0 || c == 1.0));
+            assert_eq!((out.width, out.height), (8, 8), "effect '{}'", effect.key());
+            assert!(
+                out.pixels[0..3].iter().all(|&c| c == 0.0 || c == 1.0),
+                "effect '{}'",
+                effect.key()
+            );
         }
     }
 
     #[test]
     fn mid_gray_dithers_to_roughly_half_on_pixels() {
         // A large enough solid mid-gray field should average out close to 50% "on"
-        // pixels once error diffusion spreads the rounding error around.
+        // pixels once error diffusion spreads the rounding error around, for every
+        // kernel (not just Floyd-Steinberg).
         let input = solid_image(32, 32, 0.5);
-        let out = FloydSteinberg
-            .apply(&input, &HashMap::new(), &no_cancel())
-            .unwrap();
-
-        let on = (0..32 * 32).filter(|&i| out.pixels[i * 4] == 1.0).count();
-        assert!(
-            (400..624).contains(&on),
-            "expected ~512/1024 on pixels, got {on}"
-        );
+        for effect in ALL {
+            let out = effect.apply(&input, &HashMap::new(), &no_cancel()).unwrap();
+            let on = (0..32 * 32).filter(|&i| out.pixels[i * 4] == 1.0).count();
+            assert!(
+                (350..674).contains(&on),
+                "effect '{}': expected ~512/1024 on pixels, got {on}",
+                effect.key()
+            );
+        }
     }
 
     #[test]
-    fn atkinson_diffuses_less_error_than_floyd_steinberg() {
-        // Atkinson only propagates 6/8 of the error; summing the kernel weights is
-        // a direct way to pin that down without depending on dither output stats.
-        let fs_total: f32 = FloydSteinberg::KERNEL.iter().map(|&(_, _, w)| w).sum();
+    fn kernel_weights_sum_to_expected_totals() {
+        // Every kernel here except Atkinson (which intentionally under-diffuses)
+        // should redistribute the full quantization error.
+        let full_diffusion: &[&[(i32, i32, f32)]] = &[
+            FloydSteinberg::KERNEL,
+            JarvisJudiceNinke::KERNEL,
+            Stucki::KERNEL,
+            Sierra::KERNEL,
+            SierraLite::KERNEL,
+            Burkes::KERNEL,
+        ];
+        for kernel in full_diffusion {
+            let total: f32 = kernel.iter().map(|&(_, _, w)| w).sum();
+            assert!(
+                (total - 1.0).abs() < 1e-5,
+                "kernel sums to {total}, expected 1.0"
+            );
+        }
+
         let atkinson_total: f32 = Atkinson::KERNEL.iter().map(|&(_, _, w)| w).sum();
-        assert!((fs_total - 1.0).abs() < 1e-6);
         assert!((atkinson_total - 0.75).abs() < 1e-6);
+    }
+
+    #[test]
+    fn every_effect_has_a_unique_key() {
+        let mut keys: Vec<&str> = ALL.iter().map(|e| e.key()).collect();
+        let unique_count = {
+            keys.sort_unstable();
+            keys.dedup();
+            keys.len()
+        };
+        assert_eq!(unique_count, ALL.len());
     }
 }

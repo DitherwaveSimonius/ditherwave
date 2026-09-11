@@ -3,20 +3,29 @@
   import { invoke } from '@tauri-apps/api/core'
   import { open, save } from '@tauri-apps/plugin-dialog'
 
+  type ParamValue = number | boolean | string
+
   interface ParamDescriptor {
     key: string
     displayName: string
-    kind: 'bool' | 'int' | 'float'
+    kind: 'bool' | 'int' | 'float' | 'choice'
     min: number
     max: number
     step: number
-    default: number | boolean
+    options: string[]
+    default: ParamValue
   }
   interface EffectDescriptor {
     key: string
     displayName: string
     category: string
     params: ParamDescriptor[]
+  }
+  interface EffectNode {
+    id: string
+    effectKey: string
+    params: Record<string, ParamValue>
+    enabled: boolean
   }
   interface ImagePayload {
     width: number
@@ -25,32 +34,29 @@
   }
 
   let effects = $state<EffectDescriptor[]>([])
-  let selectedKey = $state('')
-  let paramValues = $state<Record<string, number | boolean>>({})
+  let addEffectKey = $state('')
+  let stack = $state<EffectNode[]>([])
   let previewSrc = $state<string | null>(null)
   let hasImage = $state(false)
   let busy = $state(false)
   let error = $state<string | null>(null)
 
-  const selectedEffect = $derived(effects.find((e) => e.key === selectedKey) ?? null)
+  function effectByKey(key: string): EffectDescriptor | undefined {
+    return effects.find((e) => e.key === key)
+  }
+
+  function defaultParams(effect: EffectDescriptor): Record<string, ParamValue> {
+    return Object.fromEntries(effect.params.map((p) => [p.key, p.default]))
+  }
 
   onMount(async () => {
     try {
       effects = await invoke<EffectDescriptor[]>('list_effects')
-      if (effects.length > 0) selectEffect(effects[0].key)
+      if (effects.length > 0) addEffectKey = effects[0].key
     } catch (e) {
       error = String(e)
     }
   })
-
-  function selectEffect(key: string) {
-    selectedKey = key
-    const effect = effects.find((e) => e.key === key)
-    if (effect) {
-      paramValues = Object.fromEntries(effect.params.map((p) => [p.key, p.default]))
-    }
-    if (hasImage) applyEffect()
-  }
 
   async function withBusy(fn: () => Promise<void>) {
     busy = true
@@ -64,12 +70,12 @@
     }
   }
 
-  async function runApplyEffect() {
-    const payload = await invoke<ImagePayload>('apply_effect', {
-      effectKey: selectedKey,
-      params: paramValues,
+  function syncStack() {
+    if (!hasImage) return
+    withBusy(async () => {
+      const payload = await invoke<ImagePayload>('set_stack', { nodes: stack })
+      previewSrc = `data:image/png;base64,${payload.pngBase64}`
     })
-    previewSrc = `data:image/png;base64,${payload.pngBase64}`
   }
 
   function openImage() {
@@ -82,13 +88,8 @@
       const payload = await invoke<ImagePayload>('open_image', { path })
       previewSrc = `data:image/png;base64,${payload.pngBase64}`
       hasImage = true
-      if (selectedKey) await runApplyEffect()
+      stack = []
     })
-  }
-
-  function applyEffect() {
-    if (!selectedKey || !hasImage) return
-    withBusy(runApplyEffect)
   }
 
   function exportImage() {
@@ -102,19 +103,54 @@
     })
   }
 
-  function updateParam(key: string, value: number | boolean) {
-    paramValues = { ...paramValues, [key]: value }
-    applyEffect()
+  function addNode() {
+    const effect = effectByKey(addEffectKey)
+    if (!effect) return
+    stack = [
+      ...stack,
+      {
+        id: crypto.randomUUID(),
+        effectKey: effect.key,
+        params: defaultParams(effect),
+        enabled: true,
+      },
+    ]
+    syncStack()
+  }
+
+  function removeNode(id: string) {
+    stack = stack.filter((n) => n.id !== id)
+    syncStack()
+  }
+
+  function toggleNode(id: string, enabled: boolean) {
+    stack = stack.map((n) => (n.id === id ? { ...n, enabled } : n))
+    syncStack()
+  }
+
+  function moveNode(index: number, delta: number) {
+    const target = index + delta
+    if (target < 0 || target >= stack.length) return
+    const next = [...stack]
+    ;[next[index], next[target]] = [next[target], next[index]]
+    stack = next
+    syncStack()
+  }
+
+  function updateParam(nodeId: string, key: string, value: ParamValue) {
+    stack = stack.map((n) => (n.id === nodeId ? { ...n, params: { ...n.params, [key]: value } } : n))
+    syncStack()
   }
 </script>
 
 <div class="toolbar">
   <button onclick={openImage} disabled={busy}>Open…</button>
-  <select value={selectedKey} onchange={(e) => selectEffect(e.currentTarget.value)}>
+  <select bind:value={addEffectKey}>
     {#each effects as effect (effect.key)}
       <option value={effect.key}>{effect.displayName}</option>
     {/each}
   </select>
+  <button onclick={addNode} disabled={busy || !hasImage || !addEffectKey}>Add effect</button>
   <button onclick={exportImage} disabled={busy || !hasImage}>Export…</button>
   {#if error}<span class="error">{error}</span>{/if}
 </div>
@@ -128,39 +164,73 @@
     {/if}
   </div>
 
-  {#if selectedEffect}
-    <div class="params">
-      <h2>{selectedEffect.displayName}</h2>
-      {#each selectedEffect.params as param (param.key)}
-        <label class="param">
-          <span>{param.displayName}</span>
-          {#if param.kind === 'bool'}
-            <input
-              type="checkbox"
-              checked={paramValues[param.key] as boolean}
-              onchange={(e) => updateParam(param.key, e.currentTarget.checked)}
-            />
-          {:else}
-            <input
-              type="range"
-              min={param.min}
-              max={param.max}
-              step={param.step}
-              value={paramValues[param.key] as number}
-              oninput={(e) =>
-                updateParam(
-                  param.key,
-                  param.kind === 'int'
-                    ? parseInt(e.currentTarget.value, 10)
-                    : parseFloat(e.currentTarget.value),
-                )}
-            />
-            <span class="value">{paramValues[param.key]}</span>
-          {/if}
-        </label>
-      {/each}
-    </div>
-  {/if}
+  <div class="stack">
+    <h2>Effects</h2>
+    {#if stack.length === 0}
+      <p class="hint">No effects yet — pick one above and click "Add effect".</p>
+    {/if}
+    {#each stack as n, i (n.id)}
+      {@const effect = effectByKey(n.effectKey)}
+      <div class="node" class:disabled={!n.enabled}>
+        <div class="node-header">
+          <input
+            type="checkbox"
+            checked={n.enabled}
+            onchange={(e) => toggleNode(n.id, e.currentTarget.checked)}
+          />
+          <span class="node-name">{effect?.displayName ?? n.effectKey}</span>
+          <button class="icon-btn" onclick={() => moveNode(i, -1)} disabled={i === 0} title="Move up">↑</button>
+          <button
+            class="icon-btn"
+            onclick={() => moveNode(i, 1)}
+            disabled={i === stack.length - 1}
+            title="Move down">↓</button
+          >
+          <button class="icon-btn" onclick={() => removeNode(n.id)} title="Remove">×</button>
+        </div>
+        {#if effect}
+          {#each effect.params as param (param.key)}
+            <label class="param">
+              <span>{param.displayName}</span>
+              {#if param.kind === 'bool'}
+                <input
+                  type="checkbox"
+                  checked={n.params[param.key] as boolean}
+                  onchange={(e) => updateParam(n.id, param.key, e.currentTarget.checked)}
+                />
+              {:else if param.kind === 'choice'}
+                <select
+                  value={n.params[param.key] as string}
+                  onchange={(e) => updateParam(n.id, param.key, e.currentTarget.value)}
+                >
+                  {#each param.options as option (option)}
+                    <option value={option}>{option}</option>
+                  {/each}
+                </select>
+              {:else}
+                <input
+                  type="range"
+                  min={param.min}
+                  max={param.max}
+                  step={param.step}
+                  value={n.params[param.key] as number}
+                  oninput={(e) =>
+                    updateParam(
+                      n.id,
+                      param.key,
+                      param.kind === 'int'
+                        ? parseInt(e.currentTarget.value, 10)
+                        : parseFloat(e.currentTarget.value),
+                    )}
+                />
+                <span class="value">{n.params[param.key]}</span>
+              {/if}
+            </label>
+          {/each}
+        {/if}
+      </div>
+    {/each}
+  </div>
 </div>
 
 <style>
@@ -219,28 +289,80 @@
 
   .hint {
     color: #71717a;
+    font-size: 12px;
   }
 
-  .params {
-    width: 260px;
+  .stack {
+    width: 280px;
     border-left: 1px solid var(--border);
     background: var(--panel);
     padding: 16px;
     overflow-y: auto;
   }
 
-  .params h2 {
-    margin: 0 0 16px;
+  .stack h2 {
+    margin: 0 0 12px;
     font-size: 14px;
     color: var(--text-h);
+  }
+
+  .node {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 10px;
+    background: var(--bg);
+  }
+
+  .node.disabled {
+    opacity: 0.5;
+  }
+
+  .node-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+
+  .node-name {
+    flex: 1;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-h);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .icon-btn {
+    width: 22px;
+    height: 22px;
+    line-height: 1;
+    padding: 0;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+  }
+
+  .icon-btn:not(:disabled):hover {
+    border-color: var(--accent);
+  }
+
+  .icon-btn:disabled {
+    opacity: 0.3;
   }
 
   .param {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    margin-bottom: 16px;
+    margin-bottom: 10px;
     font-size: 12px;
+  }
+
+  .param:last-child {
+    margin-bottom: 0;
   }
 
   .param input[type='range'] {
