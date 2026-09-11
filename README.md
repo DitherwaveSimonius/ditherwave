@@ -13,12 +13,13 @@ Boy"/"DitherBoy" or a close variant**, to avoid colliding with that product's na
 
 ## Status
 
-Milestones M0-M4 done: raster (PNG/JPEG) and RAW photo dithering with a
-non-destructive, reorderable effect stack. 14 built-in algorithms (7
+Milestones M0-M5 done: raster (PNG/JPEG), RAW, and now SVG input, all through
+the same non-destructive, reorderable effect stack. 14 built-in algorithms (7
 error-diffusion, 3 ordered/Bayer, 3 pattern/clustered-dot halftone, 1
 palette-map with 2 built-in palettes + k-means extraction). A stack built in
 the desktop app can be saved as a TOML recipe and replayed over a whole
-folder with `ditheros-cli`. No SVG/plugins yet — see the roadmap below.
+folder with `ditheros-cli`, or exported as a "dot emission" vector SVG for
+print/embroidery. No plugin system yet — see the roadmap below.
 
 ## Project layout
 

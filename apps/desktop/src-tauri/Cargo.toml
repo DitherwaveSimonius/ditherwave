@@ -20,6 +20,7 @@ tauri-build = { version = "2.6.3", features = [] }
 ditheros-core.workspace = true
 ditheros-raw.workspace = true
 ditheros-recipe.workspace = true
+ditheros-vector.workspace = true
 serde_json.workspace = true
 serde.workspace = true
 log = "0.4"

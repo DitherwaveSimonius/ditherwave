@@ -89,6 +89,7 @@
               'png',
               'jpg',
               'jpeg',
+              'svg',
               'cr2',
               'cr3',
               'nef',
@@ -102,6 +103,7 @@
             ],
           },
           { name: 'Images', extensions: ['png', 'jpg', 'jpeg'] },
+          { name: 'Vector (SVG)', extensions: ['svg'] },
           {
             name: 'RAW Photos',
             extensions: ['cr2', 'cr3', 'nef', 'arw', 'raf', 'rw2', 'orf', 'dng', 'pef', 'srw'],
@@ -124,6 +126,17 @@
       })
       if (!path) return
       await invoke('export_image', { path })
+    })
+  }
+
+  function exportDotsSvg() {
+    withBusy(async () => {
+      const path = await save({
+        defaultPath: 'dithered-dots.svg',
+        filters: [{ name: 'SVG', extensions: ['svg'] }],
+      })
+      if (!path) return
+      await invoke('export_dots_svg', { path })
     })
   }
 
@@ -203,6 +216,9 @@
   <button onclick={importRecipe} disabled={busy || !hasImage}>Load Recipe…</button>
   <button onclick={exportRecipe} disabled={busy || stack.length === 0}>Save Recipe…</button>
   <button onclick={exportImage} disabled={busy || !hasImage}>Export…</button>
+  <button onclick={exportDotsSvg} disabled={busy || !hasImage} title="Export as vector dots (print/embroidery)"
+    >Export Dots SVG…</button
+  >
   {#if error}<span class="error">{error}</span>{/if}
 </div>
 

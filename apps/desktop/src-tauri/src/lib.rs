@@ -202,7 +202,13 @@ fn list_effects(state: tauri::State<AppState>) -> Vec<EffectDescriptor> {
 #[tauri::command]
 fn open_image(path: String, state: tauri::State<AppState>) -> Result<ImagePayload, String> {
     let path = Path::new(&path);
-    let working = if ditheros_raw::is_raw_extension(path) {
+    let is_svg = path
+        .extension()
+        .and_then(|e| e.to_str())
+        .is_some_and(|e| e.eq_ignore_ascii_case("svg"));
+    let working = if is_svg {
+        ditheros_vector::open_svg(path, None).map_err(|e| e.to_string())?
+    } else if ditheros_raw::is_raw_extension(path) {
         ditheros_raw::open_raw(path).map_err(|e| e.to_string())?
     } else {
         io::open_raster(path).map_err(|e| e.to_string())?
@@ -237,6 +243,17 @@ fn export_image(path: String, state: tauri::State<AppState>) -> Result<(), Strin
     let mut cache = state.cache.lock().unwrap();
     let rendered = render_stack(original, &stack, &state.registry, &mut cache)?;
     io::save_raster(&rendered, Path::new(&path)).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn export_dots_svg(path: String, state: tauri::State<AppState>) -> Result<(), String> {
+    let original = state.original.lock().unwrap();
+    let original = original.as_ref().ok_or("no image to export")?;
+    let stack = state.stack.lock().unwrap();
+    let mut cache = state.cache.lock().unwrap();
+    let rendered = render_stack(original, &stack, &state.registry, &mut cache)?;
+    ditheros_vector::export_dots(&rendered, Path::new(&path), 0.45, [1.0, 1.0, 1.0])
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -290,6 +307,7 @@ pub fn run() {
             open_image,
             set_stack,
             export_image,
+            export_dots_svg,
             export_recipe,
             import_recipe
         ])
