@@ -1,0 +1,26 @@
+[package]
+name = "ditheros-desktop"
+version.workspace = true
+description = "ditheros desktop app"
+authors = []
+license.workspace = true
+edition.workspace = true
+rust-version = "1.77.2"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "ditheros_desktop_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.6.3", features = [] }
+
+[dependencies]
+ditheros-core.workspace = true
+ditheros-recipe.workspace = true
+serde_json.workspace = true
+serde.workspace = true
+log = "0.4"
+tauri = { version = "2.11.3", features = [] }
+tauri-plugin-log = "2"

@@ -1,0 +1,67 @@
+# ditheros
+
+Open-source dithering app for photos (raster + RAW) and vector graphics: error-diffusion,
+ordered/Bayer, pattern and glitch effects in a stackable, non-destructive pipeline, with
+a CLI for batch processing and a WASM plugin system for custom algorithms.
+
+> `ditheros` is a working project name, not final — see below.
+
+Inspired by the (commercial, closed-source) [Dither Boy](https://studioaaa.com/product/dither-boy/)
+by Studio AAA. This project shares no code with it and aims to be a more capable, fully
+open-source alternative — not a clone. **The final project name must not be "Dither
+Boy"/"DitherBoy" or a close variant**, to avoid colliding with that product's name.
+
+## Status
+
+Early scaffolding (milestone M0). Not usable yet — see the roadmap below.
+
+## Project layout
+
+```
+crates/
+  core/         effect trait, working-image type, effect stack, built-in algorithms
+  raw/          RAW photo decoding -> working image
+  vector/       SVG input + vector export of dithered output
+  plugin-api/   shared host<->WASM plugin types
+  plugin-host/  WASM plugin loader
+  recipe/       serializable effect-stack "recipes" shared by the GUI and CLI
+apps/
+  desktop/      Tauri (Rust + Svelte) desktop app
+  cli/          batch/folder processing binary
+sdk/plugin-sdk-rust/   template for Rust-based plugin authors
+examples/plugins/      reference plugins (added starting M6)
+```
+
+## Development
+
+Requires Rust (stable, via [rustup](https://rustup.rs)) and Node.js (via
+[nvm](https://github.com/nvm-sh/nvm) or your package manager of choice).
+
+```bash
+# whole Rust workspace
+cargo check --workspace
+cargo clippy --workspace --all-targets
+cargo fmt --all
+
+# desktop app
+cd apps/desktop
+npm install
+npm run tauri dev
+```
+
+## Roadmap
+
+- **M0** — workspace scaffold, CI, empty desktop window
+- **M1** — minimal raster pipeline (a handful of algorithms, open/export, basic UI)
+- **M2** — full non-destructive effect stack, remaining built-in algorithms, palettes
+- **M3** — RAW input
+- **M4** — recipes + CLI/batch processing
+- **M5** — SVG input + vector (dot-emission) export
+- **M6** — WASM plugin system
+- **M7** — Windows build + packaging
+- **M8** — animation/video dithering, contour-vectorization (stretch)
+
+## License
+
+Licensed under either of [Apache License, Version 2.0](LICENSE-APACHE) or
+[MIT license](LICENSE-MIT) at your option.

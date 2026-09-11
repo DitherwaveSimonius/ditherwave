@@ -1,0 +1,9 @@
+[package]
+name = "ditheros-plugin-sdk"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+ditheros-plugin-api.workspace = true
+serde.workspace = true
