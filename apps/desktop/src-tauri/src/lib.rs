@@ -1,5 +1,5 @@
 use base64::Engine;
-use ditheros_core::{
+use ditherwave_core::{
     io, EffectContext, EffectNode, EffectStack, ParamKind, Registry, WorkingImage,
 };
 use serde::Serialize;
@@ -67,8 +67,8 @@ fn to_payload(image: &WorkingImage) -> Result<ImagePayload, String> {
     })
 }
 
-fn category_name(category: ditheros_core::EffectCategory) -> &'static str {
-    use ditheros_core::EffectCategory::*;
+fn category_name(category: ditherwave_core::EffectCategory) -> &'static str {
+    use ditherwave_core::EffectCategory::*;
     match category {
         ErrorDiffusion => "ErrorDiffusion",
         Ordered => "Ordered",
@@ -207,9 +207,9 @@ fn open_image(path: String, state: tauri::State<AppState>) -> Result<ImagePayloa
         .and_then(|e| e.to_str())
         .is_some_and(|e| e.eq_ignore_ascii_case("svg"));
     let working = if is_svg {
-        ditheros_vector::open_svg(path, None).map_err(|e| e.to_string())?
-    } else if ditheros_raw::is_raw_extension(path) {
-        ditheros_raw::open_raw(path).map_err(|e| e.to_string())?
+        ditherwave_vector::open_svg(path, None).map_err(|e| e.to_string())?
+    } else if ditherwave_raw::is_raw_extension(path) {
+        ditherwave_raw::open_raw(path).map_err(|e| e.to_string())?
     } else {
         io::open_raster(path).map_err(|e| e.to_string())?
     };
@@ -252,7 +252,7 @@ fn export_dots_svg(path: String, state: tauri::State<AppState>) -> Result<(), St
     let stack = state.stack.lock().unwrap();
     let mut cache = state.cache.lock().unwrap();
     let rendered = render_stack(original, &stack, &state.registry, &mut cache)?;
-    ditheros_vector::export_dots(&rendered, Path::new(&path), 0.45, [1.0, 1.0, 1.0])
+    ditherwave_vector::export_dots(&rendered, Path::new(&path), 0.45, [1.0, 1.0, 1.0])
         .map_err(|e| e.to_string())
 }
 
@@ -262,8 +262,8 @@ fn export_recipe(path: String, state: tauri::State<AppState>) -> Result<(), Stri
     let name = Path::new(&path)
         .file_stem()
         .map(|s| s.to_string_lossy().into_owned())
-        .unwrap_or_else(|| "ditheros recipe".to_string());
-    let recipe = ditheros_recipe::Recipe::from_stack(name, &stack);
+        .unwrap_or_else(|| "ditherwave recipe".to_string());
+    let recipe = ditherwave_recipe::Recipe::from_stack(name, &stack);
     recipe.save(Path::new(&path)).map_err(|e| e.to_string())
 }
 
@@ -278,7 +278,7 @@ struct StackPayload {
 
 #[tauri::command]
 fn import_recipe(path: String, state: tauri::State<AppState>) -> Result<StackPayload, String> {
-    let recipe = ditheros_recipe::Recipe::load(Path::new(&path)).map_err(|e| e.to_string())?;
+    let recipe = ditherwave_recipe::Recipe::load(Path::new(&path)).map_err(|e| e.to_string())?;
     let new_stack = recipe.to_stack();
 
     let original = state.original.lock().unwrap();
@@ -293,13 +293,13 @@ fn import_recipe(path: String, state: tauri::State<AppState>) -> Result<StackPay
 }
 
 /// Built-in effects plus any WASM plugins found in the user's plugins
-/// directory (`~/Library/Application Support/ditheros/plugins` on macOS).
+/// directory (`~/Library/Application Support/ditherwave/plugins` on macOS).
 /// A plugin that fails to load is skipped (logged to stderr by
 /// `load_plugins_dir`) rather than failing app startup.
 fn build_registry() -> Registry {
     let mut registry = Registry::with_builtins();
-    if let Some(dir) = ditheros_plugin_host::default_plugins_dir() {
-        for plugin in ditheros_plugin_host::load_plugins_dir(&dir) {
+    if let Some(dir) = ditherwave_plugin_host::default_plugins_dir() {
+        for plugin in ditherwave_plugin_host::load_plugins_dir(&dir) {
             registry.register(plugin.key(), plugin);
         }
     }
@@ -342,7 +342,9 @@ pub fn run() {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ditheros_core::{ColorSpace, Effect, EffectCategory, EffectResult, ParamDef, ParamValues};
+    use ditherwave_core::{
+        ColorSpace, Effect, EffectCategory, EffectResult, ParamDef, ParamValues,
+    };
     use std::sync::atomic::{AtomicUsize, Ordering};
 
     static CALLS_A: AtomicUsize = AtomicUsize::new(0);

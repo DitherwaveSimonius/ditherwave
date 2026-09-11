@@ -1,11 +1,11 @@
 [package]
-name = "ditheros-raw"
+name = "ditherwave-raw"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 
 [dependencies]
-ditheros-core.workspace = true
+ditherwave-core.workspace = true
 thiserror.workspace = true
 # LGPL-3.0-only. Used as an unmodified, dynamically-swappable dependency only —
 # see the licensing note in README.md. Wraps rawloader's sensor decode with

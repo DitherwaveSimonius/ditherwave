@@ -1,11 +1,11 @@
 [package]
-name = "ditheros-plugin-sdk"
+name = "ditherwave-plugin-sdk"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 
 [dependencies]
-ditheros-plugin-api.workspace = true
+ditherwave-plugin-api.workspace = true
 extism-pdk = "1.4.1"
 serde.workspace = true
 base64 = "0.22"

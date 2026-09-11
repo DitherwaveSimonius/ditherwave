@@ -169,7 +169,7 @@ pub(crate) fn threshold_matrix_dither(
 /// builds a fresh boxed instance of it.
 pub type EffectCtor = (&'static str, fn() -> Box<dyn Effect>);
 
-/// All algorithms built into `ditheros-core`, for registering into a
+/// All algorithms built into `ditherwave-core`, for registering into a
 /// [`Registry`](crate::registry::Registry).
 pub fn builtins() -> Vec<EffectCtor> {
     vec![

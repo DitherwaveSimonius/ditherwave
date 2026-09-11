@@ -1,5 +1,5 @@
 //! Loads user-provided WASM plugins (via [Extism](https://extism.org)) and
-//! wraps each one in a [`ditheros_core::Effect`], so plugins show up in the
+//! wraps each one in a [`ditherwave_core::Effect`], so plugins show up in the
 //! registry exactly like a built-in algorithm — the rest of the app (UI,
 //! stack, recipes, CLI) never needs to know an effect came from a plugin.
 //!
@@ -10,11 +10,11 @@
 //! passed to `apply`. See `examples/plugins/invert` for a complete example.
 
 use base64::Engine;
-use ditheros_core::{
+use ditherwave_core::{
     Effect, EffectCategory, EffectContext, EffectError, EffectResult, ParamDef, ParamKind,
     ParamValues, WorkingImage,
 };
-use ditheros_plugin_api::{PluginRequest, PluginResponse};
+use ditherwave_plugin_api::{PluginRequest, PluginResponse};
 use serde::Deserialize;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
@@ -300,7 +300,7 @@ pub fn load_plugins_dir(dir: &Path) -> Vec<Box<dyn Effect>> {
         match load_plugin(&manifest_path) {
             Ok(adapter) => plugins.push(Box::new(adapter)),
             Err(e) => eprintln!(
-                "ditheros: failed to load plugin at '{}': {e}",
+                "ditherwave: failed to load plugin at '{}': {e}",
                 manifest_path.display()
             ),
         }
@@ -308,12 +308,12 @@ pub fn load_plugins_dir(dir: &Path) -> Vec<Box<dyn Effect>> {
     plugins
 }
 
-/// The default per-user plugins directory: platform app-data dir + `ditheros/plugins`
-/// (e.g. `~/Library/Application Support/ditheros/plugins` on macOS,
-/// `%APPDATA%\ditheros\plugins` on Windows). `None` if the platform's data
+/// The default per-user plugins directory: platform app-data dir + `ditherwave/plugins`
+/// (e.g. `~/Library/Application Support/ditherwave/plugins` on macOS,
+/// `%APPDATA%\ditherwave\plugins` on Windows). `None` if the platform's data
 /// directory can't be determined.
 pub fn default_plugins_dir() -> Option<PathBuf> {
-    dirs::data_dir().map(|d| d.join("ditheros").join("plugins"))
+    dirs::data_dir().map(|d| d.join("ditherwave").join("plugins"))
 }
 
 #[cfg(test)]

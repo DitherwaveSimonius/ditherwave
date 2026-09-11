@@ -5,7 +5,7 @@
 //! sensor decode with demosaicing and a default color pipeline so this crate
 //! doesn't have to hand-roll either.
 
-use ditheros_core::{ColorSpace, WorkingImage};
+use ditherwave_core::{ColorSpace, WorkingImage};
 use std::path::Path;
 
 #[derive(Debug, thiserror::Error)]

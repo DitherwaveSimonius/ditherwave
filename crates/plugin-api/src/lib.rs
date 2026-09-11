@@ -1,14 +1,14 @@
-//! The wire contract between the host (`ditheros-plugin-host`, running in the
+//! The wire contract between the host (`ditherwave-plugin-host`, running in the
 //! desktop app / CLI) and a plugin (any WASM module, built with
-//! `ditheros-plugin-sdk` or any other language's Extism PDK). Both sides
+//! `ditherwave-plugin-sdk` or any other language's Extism PDK). Both sides
 //! agree only on these two JSON-serialized types — nothing here depends on
-//! `ditheros-core`, so a plugin author's crate doesn't need to pull in image
+//! `ditherwave-core`, so a plugin author's crate doesn't need to pull in image
 //! decoding, the effect registry, or anything else host-side.
 //!
 //! A plugin exports one function, `apply`, taking a [`PluginRequest`] and
 //! returning a [`PluginResponse`] (both JSON-encoded over the Extism call
-//! boundary — see `ditheros-plugin-sdk` for the guest-side helper and
-//! `ditheros-plugin-host` for the host-side caller).
+//! boundary — see `ditherwave-plugin-sdk` for the guest-side helper and
+//! `ditherwave-plugin-host` for the host-side caller).
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;

@@ -1,28 +1,26 @@
-# ditheros
+# Ditherwave
 
 Open-source dithering app for photos (raster + RAW) and vector graphics: error-diffusion,
 ordered/Bayer, pattern and glitch effects in a stackable, non-destructive pipeline, with
 a CLI for batch processing and a WASM plugin system for custom algorithms.
 
-> `ditheros` is a working project name, not final — see below.
-
 Inspired by the (commercial, closed-source) [Dither Boy](https://studioaaa.com/product/dither-boy/)
-by Studio AAA. This project shares no code with it and aims to be a more capable, fully
-open-source alternative — not a clone. **The final project name must not be "Dither
-Boy"/"DitherBoy" or a close variant**, to avoid colliding with that product's name.
+by Studio AAA — this project shares no code with it and aims to be a more capable, fully
+open-source alternative, not a clone.
 
 ## Status
 
-Milestones M0-M6 done: raster (PNG/JPEG), RAW, and SVG input, all through the
-same non-destructive, reorderable effect stack. 14 built-in algorithms (7
-error-diffusion, 3 ordered/Bayer, 3 pattern/clustered-dot halftone, 1
-palette-map with 2 built-in palettes + k-means extraction). A stack built in
-the desktop app can be saved as a TOML recipe and replayed over a whole
-folder with `ditheros-cli`, or exported as a "dot emission" vector SVG for
-print/embroidery. Custom algorithms can be loaded as sandboxed WASM plugins
-(see `examples/plugins/`) — they show up in the effect list and work in
-stacks/recipes exactly like a built-in. Not done yet: Windows packaging,
-animation/video dithering — see the roadmap below.
+Milestones M0-M7 done: raster (PNG/JPEG), RAW, and SVG input, all through the
+same non-destructive, reorderable effect stack. 19 built-in effects across 5
+categories (7 error-diffusion, 3 ordered/Bayer, 3 pattern/clustered-dot
+halftone, 1 palette-map with 2 built-in palettes + k-means extraction, 2
+glitch, 1 special/glow). A stack built in the desktop app can be saved as a
+TOML recipe and replayed over a whole folder with `ditherwave-cli`, or
+exported as a "dot emission" vector SVG for print/embroidery. Custom
+algorithms can be loaded as sandboxed WASM plugins (see `examples/plugins/`)
+— they show up in the effect list and work in stacks/recipes exactly like a
+built-in. CI also builds/bundles the desktop app on Windows. Not done yet:
+animation/video dithering, contour vectorization — see the roadmap below.
 
 ## Project layout
 
@@ -58,12 +56,17 @@ npm install
 npm run tauri dev
 
 # batch-apply a recipe (exported from the desktop app's "Save Recipe…") to a folder
-cargo run -p ditheros-cli -- --recipe my-look.toml --input ./photos --output ./out
+cargo run -p ditherwave-cli -- --recipe my-look.toml --input ./photos --output ./out
 ```
 
 Both the desktop app and the CLI load WASM plugins from
-`~/Library/Application Support/ditheros/plugins` (macOS) at startup — see
+`~/Library/Application Support/ditherwave/plugins` (macOS) at startup — see
 `examples/plugins/README.md` for the plugin format and how to build one.
+
+## Branding
+
+The app icon and in-app wordmark are generated, not hand-drawn — see
+`branding/README.md` for the design and how to regenerate them.
 
 ## Roadmap
 

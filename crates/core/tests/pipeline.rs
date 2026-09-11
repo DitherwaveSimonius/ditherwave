@@ -3,9 +3,9 @@
 //! write it back to disk. This is the closest thing to a UI smoke test we can
 //! run headlessly (no display needed), since `apps/desktop/src-tauri`'s
 //! `open_image`/`apply_effect`/`export_image` commands are thin wrappers
-//! around exactly these `ditheros_core` calls.
+//! around exactly these `ditherwave_core` calls.
 
-use ditheros_core::{io, EffectContext, EffectNode, EffectStack, Registry};
+use ditherwave_core::{io, EffectContext, EffectNode, EffectStack, Registry};
 use std::path::Path;
 
 #[test]
@@ -22,7 +22,7 @@ fn every_builtin_effect_runs_end_to_end_on_a_real_image() {
         cancelled: &no_cancel,
     };
 
-    let out_dir = std::env::temp_dir().join("ditheros-core-pipeline-test");
+    let out_dir = std::env::temp_dir().join("ditherwave-core-pipeline-test");
     std::fs::create_dir_all(&out_dir).unwrap();
 
     for key in registry.keys() {
@@ -109,7 +109,7 @@ fn a_multi_node_stack_runs_end_to_end_on_a_real_image() {
     assert_eq!((output.width, output.height), (input.width, input.height));
     assert!(output.pixels != input.pixels);
 
-    let out_dir = std::env::temp_dir().join("ditheros-core-pipeline-test");
+    let out_dir = std::env::temp_dir().join("ditherwave-core-pipeline-test");
     std::fs::create_dir_all(&out_dir).unwrap();
     io::save_raster(&output, &out_dir.join("stack_palette_then_dither.png")).unwrap();
 }

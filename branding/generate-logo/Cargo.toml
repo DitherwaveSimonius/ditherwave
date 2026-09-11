@@ -1,0 +1,12 @@
+[package]
+name = "generate-logo"
+version = "0.1.0"
+edition = "2021"
+
+# Deliberately its own workspace root (empty [workspace] table) — this is a
+# one-off branding asset tool, not part of the app, and shouldn't make
+# `cargo build --workspace` at the repo root try to resolve or build it.
+[workspace]
+
+[dependencies]
+image = { version = "0.25", default-features = false, features = ["png"] }

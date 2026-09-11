@@ -2,6 +2,7 @@
   import { onMount } from 'svelte'
   import { invoke } from '@tauri-apps/api/core'
   import { open, save } from '@tauri-apps/plugin-dialog'
+  import logo from './assets/logo.png'
 
   type ParamValue = number | boolean | string
 
@@ -205,6 +206,8 @@
 </script>
 
 <div class="toolbar">
+  <img class="logo" src={logo} alt="Ditherwave" />
+  <span class="wordmark">Ditherwave</span>
   <button onclick={openImage} disabled={busy}>Open…</button>
   <select bind:value={addEffectKey}>
     {#each effects as effect (effect.key)}
@@ -304,26 +307,57 @@
   .toolbar {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 14px;
-    border-bottom: 1px solid var(--border);
+    gap: 10px;
+    padding: 8px 12px;
+    border-bottom: 3px solid var(--panel-border);
     background: var(--panel);
+    color: var(--panel-ink);
+  }
+
+  .logo {
+    width: 26px;
+    height: 26px;
+    image-rendering: pixelated;
+    flex-shrink: 0;
+  }
+
+  .wordmark {
+    font-family: var(--mono);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 13px;
+    margin-right: 8px;
+    white-space: nowrap;
   }
 
   .toolbar button,
   .toolbar select {
-    padding: 6px 12px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 5px;
+    padding: 6px 10px;
+    background: var(--panel-card);
+    color: var(--panel-ink);
+    border: 2px solid var(--panel-border);
+    border-radius: 0;
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    box-shadow: 2px 2px 0 var(--panel-border);
   }
 
   .toolbar button:not(:disabled):hover {
-    border-color: var(--accent);
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .toolbar button:not(:disabled):active {
+    box-shadow: none;
+    transform: translate(2px, 2px);
   }
 
   .toolbar button:disabled {
-    opacity: 0.5;
+    opacity: 0.4;
+    box-shadow: none;
   }
 
   .spacer {
@@ -331,8 +365,9 @@
   }
 
   .error {
-    color: #f87171;
-    font-size: 12px;
+    color: #b91c1c;
+    font-family: var(--mono);
+    font-size: 11px;
   }
 
   .body {
@@ -348,40 +383,51 @@
     justify-content: center;
     padding: 24px;
     overflow: auto;
+    background: var(--bg);
   }
 
   .preview img {
     max-width: 100%;
     max-height: 100%;
     image-rendering: pixelated;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 0 3px var(--panel-border);
   }
 
   .hint {
     color: #71717a;
-    font-size: 12px;
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
   }
 
   .stack {
-    width: 280px;
-    border-left: 1px solid var(--border);
+    width: 290px;
+    border-left: 3px solid var(--panel-border);
     background: var(--panel);
-    padding: 16px;
+    color: var(--panel-ink);
+    padding: 14px;
     overflow-y: auto;
   }
 
   .stack h2 {
     margin: 0 0 12px;
-    font-size: 14px;
-    color: var(--text-h);
+    font-family: var(--mono);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--panel-ink);
+    border-bottom: 2px solid var(--panel-border);
+    padding-bottom: 6px;
   }
 
   .node {
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 10px;
+    border: 2px solid var(--panel-border);
+    border-radius: 0;
+    padding: 8px;
     margin-bottom: 10px;
-    background: var(--bg);
+    background: var(--panel-card);
+    box-shadow: 3px 3px 0 var(--panel-border);
   }
 
   .node.disabled {
@@ -397,9 +443,12 @@
 
   .node-name {
     flex: 1;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-h);
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: var(--panel-ink);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -410,13 +459,16 @@
     height: 22px;
     line-height: 1;
     padding: 0;
-    background: transparent;
-    border: 1px solid var(--border);
-    border-radius: 4px;
+    background: var(--panel);
+    color: var(--panel-ink);
+    border: 2px solid var(--panel-border);
+    border-radius: 0;
+    font-family: var(--mono);
   }
 
   .icon-btn:not(:disabled):hover {
-    border-color: var(--accent);
+    background: var(--accent);
+    color: #fff;
   }
 
   .icon-btn:disabled {
@@ -428,19 +480,38 @@
     flex-direction: column;
     gap: 4px;
     margin-bottom: 10px;
-    font-size: 12px;
+    font-family: var(--mono);
+    font-size: 11px;
   }
 
   .param:last-child {
     margin-bottom: 0;
   }
 
+  .param > span:first-child {
+    color: var(--panel-ink-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    font-size: 10px;
+  }
+
   .param input[type='range'] {
     width: 100%;
+    accent-color: var(--accent);
+  }
+
+  .param select {
+    background: var(--panel);
+    color: var(--panel-ink);
+    border: 2px solid var(--panel-border);
+    border-radius: 0;
+    padding: 3px 6px;
+    font-family: var(--mono);
+    font-size: 11px;
   }
 
   .value {
     align-self: flex-end;
-    color: #a1a1aa;
+    color: var(--panel-ink-dim);
   }
 </style>

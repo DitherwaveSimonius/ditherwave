@@ -1,14 +1,14 @@
 [package]
-name = "ditheros-cli"
+name = "ditherwave-cli"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 
 [dependencies]
-ditheros-core.workspace = true
-ditheros-plugin-host.workspace = true
-ditheros-raw.workspace = true
-ditheros-recipe.workspace = true
+ditherwave-core.workspace = true
+ditherwave-plugin-host.workspace = true
+ditherwave-raw.workspace = true
+ditherwave-recipe.workspace = true
 clap = { version = "4", features = ["derive"] }
 indicatif = "0.17"
 rayon = "1"

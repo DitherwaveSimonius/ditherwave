@@ -1,5 +1,5 @@
 [package]
-name = "ditheros-plugin-api"
+name = "ditherwave-plugin-api"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

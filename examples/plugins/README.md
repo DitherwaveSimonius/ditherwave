@@ -1,6 +1,6 @@
 # Example Plugins
 
-Reference WASM plugins for `ditheros`, built with [`ditheros-plugin-sdk`](../../sdk/plugin-sdk-rust).
+Reference WASM plugins for `ditherwave`, built with [`ditherwave-plugin-sdk`](../../sdk/plugin-sdk-rust).
 A plugin is a directory with two files:
 
 - `plugin.toml` — the manifest (key, display name, category, parameter schema, and
@@ -25,7 +25,7 @@ cp target/wasm32-wasip1/release/invert_plugin.wasm examples/plugins/invert/
 ## Writing your own
 
 1. `cargo new --lib my_plugin` inside (or outside) this repo, add
-   `ditheros-plugin-sdk` as a dependency and `crate-type = ["cdylib"]`.
+   `ditherwave-plugin-sdk` as a dependency and `crate-type = ["cdylib"]`.
 2. Export one function using `#[plugin_fn]` — see `invert/src/lib.rs` for the
    complete pattern (decode the request's pixels, transform them, re-encode a
    response).
@@ -35,8 +35,8 @@ cp target/wasm32-wasip1/release/invert_plugin.wasm examples/plugins/invert/
    entry per parameter (`key`, `display_name`, `kind` — `bool`, `int`, `float`,
    or `choice` — and that kind's `min`/`max`/`step`/`options`/`default`).
 4. Build for `wasm32-wasip1`, copy the `.wasm` next to `plugin.toml`, and drop
-   the whole directory into ditheros's plugins folder
-   (`~/Library/Application Support/ditheros/plugins` on macOS).
+   the whole directory into ditherwave's plugins folder
+   (`~/Library/Application Support/ditherwave/plugins` on macOS).
 
 Plugins run sandboxed: by default they get no filesystem or network access —
 only the pixel buffer and parameters passed to `apply`, and only your

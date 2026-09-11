@@ -1,11 +1,11 @@
 [package]
-name = "ditheros-recipe"
+name = "ditherwave-recipe"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 
 [dependencies]
-ditheros-core.workspace = true
+ditherwave-core.workspace = true
 serde.workspace = true
 thiserror.workspace = true
 toml = "0.8"

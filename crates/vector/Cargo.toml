@@ -1,11 +1,11 @@
 [package]
-name = "ditheros-vector"
+name = "ditherwave-vector"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 
 [dependencies]
-ditheros-core.workspace = true
+ditherwave-core.workspace = true
 thiserror.workspace = true
 # Re-exports usvg and tiny-skia, so those aren't separate direct dependencies.
 resvg = "0.48"

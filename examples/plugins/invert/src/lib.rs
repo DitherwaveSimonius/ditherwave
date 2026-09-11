@@ -1,10 +1,10 @@
 //! Reference plugin: inverts each pixel's RGB channels (alpha untouched),
 //! blended against the original by a `strength` parameter. Minimal on
 //! purpose — this exists to prove the plugin system end-to-end, not to be a
-//! useful effect. See ditheros-plugin-sdk's crate docs for the annotated
+//! useful effect. See ditherwave-plugin-sdk's crate docs for the annotated
 //! version of this same code.
 
-use ditheros_plugin_sdk::*;
+use ditherwave_plugin_sdk::*;
 
 #[plugin_fn]
 pub fn apply(Json(request): Json<PluginRequest>) -> FnResult<Json<PluginResponse>> {

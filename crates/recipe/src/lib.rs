@@ -5,7 +5,7 @@
 //! recipe file agree only on this shape, nothing about how it was produced
 //! or will be consumed.
 
-use ditheros_core::{EffectNode, EffectStack, ParamValues};
+use ditherwave_core::{EffectNode, EffectStack, ParamValues};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 
@@ -51,7 +51,7 @@ impl Recipe {
         Self {
             meta: RecipeMeta {
                 name: name.into(),
-                created_with: format!("ditheros-recipe {}", env!("CARGO_PKG_VERSION")),
+                created_with: format!("ditherwave-recipe {}", env!("CARGO_PKG_VERSION")),
             },
             effects: stack
                 .nodes

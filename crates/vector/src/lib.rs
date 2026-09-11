@@ -7,7 +7,7 @@
 //! as discrete vector dots, which is what print and embroidery workflows
 //! actually want.
 
-use ditheros_core::{ColorSpace, WorkingImage};
+use ditherwave_core::{ColorSpace, WorkingImage};
 use resvg::{tiny_skia, usvg};
 use std::fmt::Write as _;
 use std::path::Path;
@@ -128,7 +128,7 @@ pub fn export_dots(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ditheros_core::ColorSpace;
+    use ditherwave_core::ColorSpace;
 
     const RED_SQUARE_SVG: &str = r#"<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10">
         <rect width="10" height="10" fill="rgb(255,0,0)"/>
@@ -142,7 +142,7 @@ mod tests {
 
     #[test]
     fn open_svg_rasterizes_at_intrinsic_size() {
-        let path = write_temp_svg("ditheros-vector-test-intrinsic.svg", RED_SQUARE_SVG);
+        let path = write_temp_svg("ditherwave-vector-test-intrinsic.svg", RED_SQUARE_SVG);
         let image = open_svg(&path, None).unwrap();
         assert_eq!((image.width, image.height), (10, 10));
         // Center pixel should be solid red.
@@ -154,14 +154,14 @@ mod tests {
 
     #[test]
     fn open_svg_rasterizes_at_requested_target_size() {
-        let path = write_temp_svg("ditheros-vector-test-scaled.svg", RED_SQUARE_SVG);
+        let path = write_temp_svg("ditherwave-vector-test-scaled.svg", RED_SQUARE_SVG);
         let image = open_svg(&path, Some((40, 20))).unwrap();
         assert_eq!((image.width, image.height), (40, 20));
     }
 
     #[test]
     fn open_svg_rejects_invalid_svg() {
-        let path = write_temp_svg("ditheros-vector-test-invalid.svg", "not an svg at all");
+        let path = write_temp_svg("ditherwave-vector-test-invalid.svg", "not an svg at all");
         assert!(open_svg(&path, None).is_err());
     }
 
@@ -174,7 +174,7 @@ mod tests {
             color_space: ColorSpace::Srgb,
             pixels: vec![1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0],
         };
-        let out_path = std::env::temp_dir().join("ditheros-vector-test-dots.svg");
+        let out_path = std::env::temp_dir().join("ditherwave-vector-test-dots.svg");
 
         export_dots(&image, &out_path, 0.5, [1.0, 1.0, 1.0]).unwrap();
         let svg = std::fs::read_to_string(&out_path).unwrap();
@@ -194,7 +194,7 @@ mod tests {
     #[test]
     fn export_dots_on_an_all_background_image_produces_no_circles() {
         let image = WorkingImage::new(3, 3, ColorSpace::Srgb);
-        let out_path = std::env::temp_dir().join("ditheros-vector-test-empty-dots.svg");
+        let out_path = std::env::temp_dir().join("ditherwave-vector-test-empty-dots.svg");
 
         export_dots(&image, &out_path, 0.5, [0.0, 0.0, 0.0]).unwrap();
         let svg = std::fs::read_to_string(&out_path).unwrap();

@@ -1317,20 +1317,20 @@ dependencies = [
 ]
 
 [[package]]
-name = "ditheros-cli"
+name = "ditherwave-cli"
 version = "0.1.0"
 dependencies = [
  "clap",
- "ditheros-core",
- "ditheros-plugin-host",
- "ditheros-raw",
- "ditheros-recipe",
+ "ditherwave-core",
+ "ditherwave-plugin-host",
+ "ditherwave-raw",
+ "ditherwave-recipe",
  "indicatif",
  "rayon",
 ]
 
 [[package]]
-name = "ditheros-core"
+name = "ditherwave-core"
 version = "0.1.0"
 dependencies = [
  "image",
@@ -1340,15 +1340,15 @@ dependencies = [
 ]
 
 [[package]]
-name = "ditheros-desktop"
+name = "ditherwave-desktop"
 version = "0.1.0"
 dependencies = [
  "base64 0.23.1",
- "ditheros-core",
- "ditheros-plugin-host",
- "ditheros-raw",
- "ditheros-recipe",
- "ditheros-vector",
+ "ditherwave-core",
+ "ditherwave-plugin-host",
+ "ditherwave-raw",
+ "ditherwave-recipe",
+ "ditherwave-vector",
  "log",
  "serde",
  "serde_json",
@@ -1359,7 +1359,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "ditheros-plugin-api"
+name = "ditherwave-plugin-api"
 version = "0.1.0"
 dependencies = [
  "serde",
@@ -1367,13 +1367,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "ditheros-plugin-host"
+name = "ditherwave-plugin-host"
 version = "0.1.0"
 dependencies = [
  "base64 0.22.1",
  "dirs 5.0.1",
- "ditheros-core",
- "ditheros-plugin-api",
+ "ditherwave-core",
+ "ditherwave-plugin-api",
  "extism",
  "serde",
  "serde_json",
@@ -1382,29 +1382,29 @@ dependencies = [
 ]
 
 [[package]]
-name = "ditheros-plugin-sdk"
+name = "ditherwave-plugin-sdk"
 version = "0.1.0"
 dependencies = [
  "base64 0.22.1",
- "ditheros-plugin-api",
+ "ditherwave-plugin-api",
  "extism-pdk",
  "serde",
 ]
 
 [[package]]
-name = "ditheros-raw"
+name = "ditherwave-raw"
 version = "0.1.0"
 dependencies = [
- "ditheros-core",
+ "ditherwave-core",
  "imagepipe",
  "thiserror 1.0.69",
 ]
 
 [[package]]
-name = "ditheros-recipe"
+name = "ditherwave-recipe"
 version = "0.1.0"
 dependencies = [
- "ditheros-core",
+ "ditherwave-core",
  "serde",
  "serde_json",
  "thiserror 1.0.69",
@@ -1412,10 +1412,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "ditheros-vector"
+name = "ditherwave-vector"
 version = "0.1.0"
 dependencies = [
- "ditheros-core",
+ "ditherwave-core",
  "resvg",
  "serde_json",
  "thiserror 1.0.69",
@@ -2786,7 +2786,7 @@ dependencies = [
 name = "invert_plugin"
 version = "0.1.0"
 dependencies = [
- "ditheros-plugin-sdk",
+ "ditherwave-plugin-sdk",
 ]
 
 [[package]]

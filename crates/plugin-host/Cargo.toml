@@ -1,12 +1,12 @@
 [package]
-name = "ditheros-plugin-host"
+name = "ditherwave-plugin-host"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 
 [dependencies]
-ditheros-core.workspace = true
-ditheros-plugin-api.workspace = true
+ditherwave-core.workspace = true
+ditherwave-plugin-api.workspace = true
 thiserror.workspace = true
 serde.workspace = true
 serde_json.workspace = true

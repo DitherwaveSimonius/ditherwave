@@ -3,7 +3,7 @@ key = "examples.invert"
 display_name = "Invert (example plugin)"
 category = "special"
 version = "0.1.0"
-author = "ditheros contributors"
+author = "ditherwave contributors"
 wasm = "invert_plugin.wasm"
 
 [[params]]

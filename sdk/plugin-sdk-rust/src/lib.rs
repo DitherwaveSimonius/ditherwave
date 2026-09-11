@@ -1,10 +1,10 @@
-//! Helper crate for writing ditheros plugins in Rust. A plugin is a small
+//! Helper crate for writing ditherwave plugins in Rust. A plugin is a small
 //! WASM module (built for `wasm32-wasip1`) exporting one function, `apply`,
 //! wired up with `#[plugin_fn]` from `extism-pdk` (re-exported here so
 //! plugin authors don't need it as a separate dependency).
 //!
 //! ```ignore
-//! use ditheros_plugin_sdk::*;
+//! use ditherwave_plugin_sdk::*;
 //!
 //! #[plugin_fn]
 //! pub fn apply(Json(request): Json<PluginRequest>) -> FnResult<Json<PluginResponse>> {
@@ -22,7 +22,7 @@
 //! See `examples/plugins/invert` for the complete, buildable version of the
 //! above, including its `plugin.toml` manifest.
 
-pub use ditheros_plugin_api::{PluginRequest, PluginResponse};
+pub use ditherwave_plugin_api::{PluginRequest, PluginResponse};
 pub use extism_pdk::{self, plugin_fn, FnResult, Json};
 
 use base64::Engine;

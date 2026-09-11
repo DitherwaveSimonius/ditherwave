@@ -1,9 +1,9 @@
 //! End-to-end test of the SVG pipeline the desktop app actually drives: open
 //! an SVG, run it through a real effect stack, and export the result as
-//! dot-emission vector SVG — mirroring `ditheros-core`'s own pipeline test.
+//! dot-emission vector SVG — mirroring `ditherwave-core`'s own pipeline test.
 
-use ditheros_core::{EffectNode, EffectStack, Registry};
-use ditheros_vector::{export_dots, open_svg};
+use ditherwave_core::{EffectNode, EffectStack, Registry};
+use ditherwave_vector::{export_dots, open_svg};
 use std::path::Path;
 
 #[test]
@@ -32,7 +32,7 @@ fn svg_in_stack_dots_out_end_to_end() {
         .expect("stack should run on rasterized SVG");
     assert_eq!((rendered.width, rendered.height), (64, 64));
 
-    let out_dir = std::env::temp_dir().join("ditheros-vector-pipeline-test");
+    let out_dir = std::env::temp_dir().join("ditherwave-vector-pipeline-test");
     std::fs::create_dir_all(&out_dir).unwrap();
     let out_path = out_dir.join("shapes_dots.svg");
 

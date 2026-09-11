@@ -1,14 +1,14 @@
 use clap::Parser;
-use ditheros_core::{io, Registry, WorkingImage};
-use ditheros_recipe::Recipe;
+use ditherwave_core::{io, Registry, WorkingImage};
+use ditherwave_recipe::Recipe;
 use indicatif::{ProgressBar, ProgressStyle};
 use rayon::prelude::*;
 use std::path::{Path, PathBuf};
 
-/// Batch-apply a ditheros recipe (built in the desktop app, saved as TOML) to
+/// Batch-apply a ditherwave recipe (built in the desktop app, saved as TOML) to
 /// one photo or every supported photo in a folder.
 #[derive(Parser)]
-#[command(name = "ditheros", version, about)]
+#[command(name = "ditherwave", version, about)]
 struct Cli {
     /// Path to a recipe TOML file (exported from the desktop app).
     #[arg(long)]
@@ -32,15 +32,15 @@ fn is_supported_input(path: &Path) -> bool {
         .map(|e| e.to_ascii_lowercase());
     match ext {
         Some(ext) => {
-            RASTER_EXTENSIONS.contains(&ext.as_str()) || ditheros_raw::is_raw_extension(path)
+            RASTER_EXTENSIONS.contains(&ext.as_str()) || ditherwave_raw::is_raw_extension(path)
         }
         None => false,
     }
 }
 
 fn open_any(path: &Path) -> Result<WorkingImage, String> {
-    if ditheros_raw::is_raw_extension(path) {
-        ditheros_raw::open_raw(path).map_err(|e| e.to_string())
+    if ditherwave_raw::is_raw_extension(path) {
+        ditherwave_raw::open_raw(path).map_err(|e| e.to_string())
     } else {
         io::open_raster(path).map_err(|e| e.to_string())
     }
@@ -68,7 +68,7 @@ fn collect_inputs(input: &Path) -> Result<Vec<PathBuf>, String> {
 
 fn process_one(
     path: &Path,
-    stack: &ditheros_core::EffectStack,
+    stack: &ditherwave_core::EffectStack,
     registry: &Registry,
     output_dir: &Path,
 ) -> Result<(), String> {
@@ -88,8 +88,8 @@ fn process_one(
 /// load is skipped (logged to stderr) rather than aborting the whole run.
 fn build_registry() -> Registry {
     let mut registry = Registry::with_builtins();
-    if let Some(dir) = ditheros_plugin_host::default_plugins_dir() {
-        for plugin in ditheros_plugin_host::load_plugins_dir(&dir) {
+    if let Some(dir) = ditherwave_plugin_host::default_plugins_dir() {
+        for plugin in ditherwave_plugin_host::load_plugins_dir(&dir) {
             registry.register(plugin.key(), plugin);
         }
     }

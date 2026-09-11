@@ -6,8 +6,8 @@
 //! build -p invert_plugin --target wasm32-wasip1 --release`, then copied
 //! next to `plugin.toml` — see `examples/plugins/README.md`).
 
-use ditheros_core::{ColorSpace, Effect, EffectContext, WorkingImage};
-use ditheros_plugin_host::load_plugin;
+use ditherwave_core::{ColorSpace, Effect, EffectContext, WorkingImage};
+use ditherwave_plugin_host::load_plugin;
 use std::path::Path;
 
 fn invert_manifest_path() -> std::path::PathBuf {
@@ -44,7 +44,7 @@ fn loads_and_runs_the_example_invert_plugin() {
         cancelled: &no_cancel,
     };
 
-    let mut params = ditheros_core::ParamValues::new();
+    let mut params = ditherwave_core::ParamValues::new();
     params.insert("strength".to_string(), serde_json::json!(1.0));
 
     let output = plugin
@@ -82,7 +82,7 @@ fn strength_zero_leaves_the_image_unchanged() {
         cancelled: &no_cancel,
     };
 
-    let mut params = ditheros_core::ParamValues::new();
+    let mut params = ditherwave_core::ParamValues::new();
     params.insert("strength".to_string(), serde_json::json!(0.0));
 
     let output = plugin
@@ -105,12 +105,12 @@ fn plugin_runs_through_the_registry_and_effect_stack_like_a_builtin() {
     let adapter = load_plugin(&manifest).expect("failed to load example plugin");
     let key = adapter.key();
 
-    let mut registry = ditheros_core::Registry::with_builtins();
+    let mut registry = ditherwave_core::Registry::with_builtins();
     registry.register(key, Box::new(adapter));
     assert!(registry.get(key).is_some());
 
-    let stack = ditheros_core::EffectStack {
-        nodes: vec![ditheros_core::EffectNode {
+    let stack = ditherwave_core::EffectStack {
+        nodes: vec![ditherwave_core::EffectNode {
             id: "1".into(),
             effect_key: key.to_string(),
             params: [("strength".to_string(), serde_json::json!(1.0))]

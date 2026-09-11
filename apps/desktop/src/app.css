@@ -1,15 +1,24 @@
 :root {
+  /* Dark canvas + warm parchment panel, echoing the dithered violet/cream
+     logo — deliberately high-contrast and a little retro, sharp corners
+     everywhere instead of soft rounded UI chrome. */
+  --bg: #0a0a0d;
   --text: #d4d4d8;
   --text-h: #f4f4f5;
-  --bg: #18181b;
-  --panel: #202023;
-  --border: #303034;
-  --accent: #c084fc;
+
+  --panel: #e8dfc9;
+  --panel-ink: #221a10;
+  --panel-ink-dim: #5c5138;
+  --panel-border: #221a10;
+  --panel-card: #ddd0af;
+
+  --accent: #6d28d9;
+  --accent-bright: #a78bfa;
 
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  --mono: 'Menlo', 'Consolas', ui-monospace, monospace;
 
-  font: 14px/1.45 var(--sans);
+  font: 13px/1.45 var(--sans);
   color: var(--text);
   background: var(--bg);
   color-scheme: dark;
