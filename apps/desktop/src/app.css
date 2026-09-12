@@ -1,8 +1,8 @@
 :root {
-  /* Dark canvas + warm parchment panel, echoing the dithered violet/cream
-     logo — deliberately high-contrast and a little retro, sharp corners
-     everywhere instead of soft rounded UI chrome. */
-  --bg: #0a0a0d;
+  /* Dark-beige canvas + lighter parchment panel — one warm beige family,
+     graded from dark to light, instead of stark black-vs-cream. Sharp
+     corners everywhere instead of soft rounded UI chrome. */
+  --bg: #4a4130;
   --text: #d4d4d8;
   --text-h: #f4f4f5;
 

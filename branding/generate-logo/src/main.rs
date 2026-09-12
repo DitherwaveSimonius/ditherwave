@@ -1,3 +1,7 @@
+// A freestanding (transparent background) pixel-art waveform logo: the bars
+// themselves are filled with a Bayer-dithered violet-to-cream gradient,
+// instead of sitting on a solid dithered background card.
+
 const GRID: usize = 32;
 const SCALE: usize = 32; // 32x32 grid -> 1024x1024 output, nearest-neighbor upscaled.
 
@@ -8,84 +12,76 @@ const SCALE: usize = 32; // 32x32 grid -> 1024x1024 output, nearest-neighbor ups
 // independent per-channel noise.
 const BAYER_4X4: [[u32; 4]; 4] = [[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]];
 
-// Background gradient endpoints (dark violet -> near-black).
-const BG_TOP: [f32; 3] = [0.30, 0.14, 0.55];
-const BG_BOTTOM: [f32; 3] = [0.03, 0.02, 0.08];
-
-// Foreground waveform bar color + dark outline.
-const BAR_FILL: [f32; 3] = [0.97, 0.95, 0.90];
-const BAR_OUTLINE: [f32; 3] = [0.03, 0.02, 0.08];
+// Bar fill gradient endpoints (violet top -> cream bottom).
+const FILL_TOP: [f32; 3] = [0.45, 0.20, 0.85];
+const FILL_BOTTOM: [f32; 3] = [0.97, 0.95, 0.90];
 
 /// Bar heights (in grid cells, from a 32-cell-tall canvas), forming a
-/// symmetric "equalizer" waveform silhouette.
-const BAR_HEIGHTS: &[usize] = &[4, 7, 11, 16, 20, 16, 11, 7, 4];
+/// symmetric "equalizer" waveform silhouette. Individual freestanding bars —
+/// no shared outline/background — so the gaps between them stay transparent.
+const BAR_HEIGHTS: &[usize] = &[4, 8, 13, 19, 24, 19, 13, 8, 4];
 const BAR_WIDTH: usize = 2;
 const BAR_GAP: usize = 1;
 
-fn main() {
-    // 1. Two-tone Bayer-dithered vertical gradient: at each cell, compare the
-    // gradient's fraction against the matrix threshold to pick BG_TOP or
-    // BG_BOTTOM outright (never blended), which is what gives a dithered
-    // gradient its characteristic stippled transition band instead of a
-    // smooth blend.
-    let mut grid = vec![0.0f32; GRID * GRID * 3];
-    for y in 0..GRID {
-        let t = y as f32 / (GRID - 1) as f32;
-        for x in 0..GRID {
-            let threshold = (BAYER_4X4[y % 4][x % 4] as f32 + 0.5) / 16.0;
-            let color = if t > threshold { BG_BOTTOM } else { BG_TOP };
-            let base = (y * GRID + x) * 3;
-            grid[base] = color[0];
-            grid[base + 1] = color[1];
-            grid[base + 2] = color[2];
-        }
+#[derive(Clone, Copy, Default)]
+struct Cell {
+    color: [f32; 3],
+    alpha: u8,
+}
+
+fn dithered_fill(x: usize, y: usize, top_of_shape: usize, bottom_of_shape: usize) -> [f32; 3] {
+    let span = (bottom_of_shape - top_of_shape).max(1) as f32;
+    let t = (y - top_of_shape) as f32 / span;
+    let threshold = (BAYER_4X4[y % 4][x % 4] as f32 + 0.5) / 16.0;
+    if t > threshold {
+        FILL_BOTTOM
+    } else {
+        FILL_TOP
     }
+}
 
-    // 2. Composite the waveform bars on top, with a 1-cell dark outline.
-    let total_bars_width = BAR_HEIGHTS.len() * BAR_WIDTH + (BAR_HEIGHTS.len() - 1) * BAR_GAP;
-    let start_x = (GRID - total_bars_width) / 2;
-
-    let mut set = |x: i32, y: i32, color: [f32; 3]| {
+fn main() {
+    let mut grid = vec![Cell::default(); GRID * GRID];
+    let mut set = |x: i32, y: i32, cell: Cell| {
         if x < 0 || y < 0 || x >= GRID as i32 || y >= GRID as i32 {
             return;
         }
-        let base = (y as usize * GRID + x as usize) * 3;
-        grid[base] = color[0];
-        grid[base + 1] = color[1];
-        grid[base + 2] = color[2];
+        grid[y as usize * GRID + x as usize] = cell;
     };
+
+    let total_bars_width = BAR_HEIGHTS.len() * BAR_WIDTH + (BAR_HEIGHTS.len() - 1) * BAR_GAP;
+    let start_x = (GRID - total_bars_width) / 2;
+    let shape_top = GRID / 2 - BAR_HEIGHTS.iter().max().copied().unwrap_or(0) / 2;
+    let shape_bottom = GRID / 2 + BAR_HEIGHTS.iter().max().copied().unwrap_or(0) / 2;
 
     for (i, &h) in BAR_HEIGHTS.iter().enumerate() {
         let bar_x = start_x + i * (BAR_WIDTH + BAR_GAP);
-        let bottom = GRID - 5; // leave a margin at the bottom
-        let top = bottom.saturating_sub(h);
+        let center = GRID / 2;
+        let top = center - h / 2;
+        let bottom = center + h.div_ceil(2);
         for dx in 0..BAR_WIDTH {
             let x = (bar_x + dx) as i32;
-            for y in (top as i32 - 1)..=(bottom as i32) {
-                set(x - 1, y, BAR_OUTLINE);
-                set(x + BAR_WIDTH as i32, y, BAR_OUTLINE);
-            }
-            set(x, top as i32 - 1, BAR_OUTLINE);
-            set(x, bottom as i32, BAR_OUTLINE);
-            for y in top as i32..bottom as i32 {
-                set(x, y, BAR_FILL);
+            for y in top..bottom {
+                let color = dithered_fill(x as usize, y, shape_top, shape_bottom);
+                set(x as i32, y as i32, Cell { color, alpha: 255 });
             }
         }
     }
 
-    // 3. Nearest-neighbor upscale to a real icon resolution.
+    // Nearest-neighbor upscale to a real icon resolution, with alpha
+    // preserved so the logo sits on a transparent background.
     let out_size = (GRID * SCALE) as u32;
     let mut buf = image::RgbaImage::new(out_size, out_size);
     for y in 0..out_size {
         for x in 0..out_size {
             let gx = x as usize / SCALE;
             let gy = y as usize / SCALE;
-            let base = (gy * GRID + gx) * 3;
+            let cell = grid[gy * GRID + gx];
             let px = [
-                (grid[base].clamp(0.0, 1.0) * 255.0).round() as u8,
-                (grid[base + 1].clamp(0.0, 1.0) * 255.0).round() as u8,
-                (grid[base + 2].clamp(0.0, 1.0) * 255.0).round() as u8,
-                255,
+                (cell.color[0].clamp(0.0, 1.0) * 255.0).round() as u8,
+                (cell.color[1].clamp(0.0, 1.0) * 255.0).round() as u8,
+                (cell.color[2].clamp(0.0, 1.0) * 255.0).round() as u8,
+                cell.alpha,
             ];
             buf.put_pixel(x, y, image::Rgba(px));
         }
