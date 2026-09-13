@@ -46,3 +46,15 @@ cp ../demo.png ../../apps/desktop/src-tauri/assets/demo.png
 
 The app embeds this file at compile time (`include_bytes!`), so a rebuild is
 needed after regenerating it.
+
+## `avatar.png` (512x512)
+
+The GitHub org/owner-account profile picture: the same waveform logo and
+dithered backdrop as the other two assets, framed with a pixel-art double
+border and a small gold "sparkle" badge — a distinct owner/founder variant,
+not the plain app icon reused as a profile photo.
+
+```bash
+cd branding/generate-avatar
+cargo run --release -- ../avatar.png
+```
