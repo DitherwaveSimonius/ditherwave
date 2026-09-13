@@ -10,8 +10,17 @@ pub enum IoError {
 fn from_dynamic_image(decoded: image::DynamicImage) -> WorkingImage {
     let decoded = decoded.to_rgba8();
     let (width, height) = decoded.dimensions();
-    let pixels = decoded.into_raw().into_iter().map(|b| b as f32 / 255.0).collect();
-    WorkingImage { width, height, color_space: ColorSpace::Srgb, pixels }
+    let pixels = decoded
+        .into_raw()
+        .into_iter()
+        .map(|b| b as f32 / 255.0)
+        .collect();
+    WorkingImage {
+        width,
+        height,
+        color_space: ColorSpace::Srgb,
+        pixels,
+    }
 }
 
 /// Decodes a raster file (PNG, JPEG, ...) into a [`WorkingImage`]. Pixels are kept
