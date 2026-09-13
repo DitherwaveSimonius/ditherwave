@@ -1,10 +1,15 @@
 // Generates the GitHub profile avatar for the project's owner account: the
 // same waveform logo mark as the app icon, on the same dithered violet-to-
-// black backdrop as the demo image, but framed with a pixel-art border and a
-// "founder" sparkle badge — a distinct, recognizable "this is the owner
-// account" variant, not just the plain app icon re-used as a profile photo.
+// black backdrop as the demo image, framed with a circular pixel-art ring
+// and a "founder" sparkle badge. GitHub displays avatars cropped to a
+// circle, so — unlike the app icon — every design element here is kept
+// inside a safe inscribed circle rather than running to the square canvas
+// edges, and the frame is an actual ring (distance-based), not a square
+// border that would look chopped off once cropped round.
 
 const S: usize = 512;
+const CX: i32 = (S / 2) as i32;
+const CY: i32 = (S / 2) as i32;
 
 const BAYER_4X4: [[u32; 4]; 4] = [[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]];
 
@@ -57,8 +62,8 @@ fn draw_logo(buf: &mut [f32], cx: i32, center_y: i32, total_h: i32, cell: i32) {
 }
 
 /// A 4-point pixel "sparkle" badge — the classic 8-bit "special/shiny" marker
-/// — used here to flag this as the owner/founder account's avatar rather
-/// than a plain reuse of the app icon.
+/// — flagging this as the owner/founder account's avatar rather than a
+/// plain reuse of the app icon.
 const SPARKLE: [&str; 9] = [
     "....#....",
     "....#....",
@@ -91,17 +96,20 @@ fn draw_sparkle(buf: &mut [f32], cx: i32, cy: i32, cell: i32, color: [f32; 3]) {
     }
 }
 
-/// A pixel-art double-line frame just inside the canvas edge, marking this
-/// image as a "badge" rather than a floating freestanding mark.
-fn draw_frame(buf: &mut [f32], margin: i32, thickness: i32, color: [f32; 3]) {
-    for t in 0..thickness {
-        for x in margin..(S as i32 - margin) {
-            set(buf, x, margin + t, color);
-            set(buf, x, S as i32 - margin - 1 - t, color);
-        }
-        for y in margin..(S as i32 - margin) {
-            set(buf, margin + t, y, color);
-            set(buf, S as i32 - margin - 1 - t, y, color);
+/// A pixel-art ring (blocky, distance-based — not anti-aliased, so it stays
+/// in the chunky pixel-art style), unlike a square frame this crops cleanly
+/// when GitHub masks the avatar to a circle.
+fn draw_ring(buf: &mut [f32], radius: i32, thickness: i32, color: [f32; 3]) {
+    let r_out = radius;
+    let r_in = radius - thickness;
+    for y in (CY - r_out - 2)..(CY + r_out + 2) {
+        for x in (CX - r_out - 2)..(CX + r_out + 2) {
+            let dx = x - CX;
+            let dy = y - CY;
+            let d2 = dx * dx + dy * dy;
+            if d2 <= r_out * r_out && d2 >= r_in * r_in {
+                set(buf, x, y, color);
+            }
         }
     }
 }
@@ -109,6 +117,8 @@ fn draw_frame(buf: &mut [f32], margin: i32, thickness: i32, color: [f32; 3]) {
 fn main() {
     let mut buf = vec![0.0f32; S * S * 4];
 
+    // Backdrop fills the full square — cropping to a circle only ever
+    // removes part of a continuous gradient, which still looks intentional.
     let bg_top = [0.18, 0.09, 0.34];
     let bg_bottom = [0.03, 0.02, 0.06];
     for y in 0..S as i32 {
@@ -119,11 +129,14 @@ fn main() {
         }
     }
 
-    draw_frame(&mut buf, 18, 4, [0.97, 0.95, 0.90]);
-    draw_frame(&mut buf, 30, 2, [0.69, 0.57, 1.0]);
+    // Everything else stays inside a safe inscribed circle (radius 226 of a
+    // 256-radius crop), so nothing important is clipped by GitHub's round
+    // avatar mask.
+    draw_ring(&mut buf, 226, 7, [0.97, 0.95, 0.90]);
+    draw_ring(&mut buf, 213, 3, [0.69, 0.57, 1.0]);
 
-    draw_logo(&mut buf, S as i32 / 2, S as i32 / 2 + 30, 220, 5);
-    draw_sparkle(&mut buf, S as i32 - 118, 118, 6, [0.96, 0.84, 0.62]);
+    draw_logo(&mut buf, CX, CY, 180, 4);
+    draw_sparkle(&mut buf, CX + 100, CY - 100, 5, [0.96, 0.84, 0.62]);
 
     let mut out = image::RgbaImage::new(S as u32, S as u32);
     for y in 0..S {
