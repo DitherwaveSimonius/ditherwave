@@ -205,26 +205,6 @@
   }
 </script>
 
-<div class="toolbar">
-  <img class="logo" src={logo} alt="Ditherwave" />
-  <span class="wordmark">Ditherwave</span>
-  <button onclick={openImage} disabled={busy}>Open…</button>
-  <select bind:value={addEffectKey}>
-    {#each effects as effect (effect.key)}
-      <option value={effect.key}>{effect.displayName}</option>
-    {/each}
-  </select>
-  <button onclick={addNode} disabled={busy || !hasImage || !addEffectKey}>Add effect</button>
-  <span class="spacer"></span>
-  <button onclick={importRecipe} disabled={busy || !hasImage}>Load Recipe…</button>
-  <button onclick={exportRecipe} disabled={busy || stack.length === 0}>Save Recipe…</button>
-  <button onclick={exportImage} disabled={busy || !hasImage}>Export…</button>
-  <button onclick={exportDotsSvg} disabled={busy || !hasImage} title="Export as vector dots (print/embroidery)"
-    >Export Dots SVG…</button
-  >
-  {#if error}<span class="error">{error}</span>{/if}
-</div>
-
 <div class="body">
   <div class="preview">
     {#if previewSrc}
@@ -234,10 +214,27 @@
     {/if}
   </div>
 
-  <div class="stack">
-    <h2>Effects</h2>
+  <div class="panel">
+    <div class="panel-header">
+      <img class="logo" src={logo} alt="" />
+      <span class="wordmark">Ditherwave</span>
+    </div>
+
+    <div class="panel-actions">
+      <button onclick={openImage} disabled={busy}>Open…</button>
+      <div class="add-row">
+        <select bind:value={addEffectKey}>
+          {#each effects as effect (effect.key)}
+            <option value={effect.key}>{effect.displayName}</option>
+          {/each}
+        </select>
+        <button onclick={addNode} disabled={busy || !hasImage || !addEffectKey}>Add</button>
+      </div>
+    </div>
+
+    <div class="stack">
     {#if stack.length === 0}
-      <p class="hint">No effects yet — pick one above and click "Add effect".</p>
+      <p class="hint">No effects yet — pick one above and add it.</p>
     {/if}
     {#each stack as n, i (n.id)}
       {@const effect = effectByKey(n.effectKey)}
@@ -300,74 +297,24 @@
         {/if}
       </div>
     {/each}
+    </div>
+
+    <div class="panel-actions panel-actions-bottom">
+      <button onclick={importRecipe} disabled={busy || !hasImage}>Load Recipe…</button>
+      <button onclick={exportRecipe} disabled={busy || stack.length === 0}>Save Recipe…</button>
+      <button onclick={exportImage} disabled={busy || !hasImage}>Export…</button>
+      <button onclick={exportDotsSvg} disabled={busy || !hasImage} title="Export as vector dots (print/embroidery)"
+        >Export Dots SVG…</button
+      >
+    </div>
+
+    {#if error}<p class="error">{error}</p>{/if}
   </div>
 </div>
 
 <style>
-  .toolbar {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 12px;
-    border-bottom: 3px solid var(--panel-border);
-    background: var(--panel);
-    color: var(--panel-ink);
-  }
-
-  .logo {
-    width: 26px;
-    height: 26px;
-    image-rendering: pixelated;
-    flex-shrink: 0;
-  }
-
-  .wordmark {
-    font-family: var(--mono);
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    font-size: 13px;
-    margin-right: 8px;
-    white-space: nowrap;
-  }
-
-  .toolbar button,
-  .toolbar select {
-    padding: 6px 10px;
-    background: var(--panel-card);
-    color: var(--panel-ink);
-    border: 2px solid var(--panel-border);
-    border-radius: 0;
-    font-family: var(--mono);
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    box-shadow: 2px 2px 0 var(--panel-border);
-  }
-
-  .toolbar button:not(:disabled):hover {
-    background: var(--accent);
-    color: #fff;
-  }
-
-  .toolbar button:not(:disabled):active {
-    box-shadow: none;
-    transform: translate(2px, 2px);
-  }
-
-  .toolbar button:disabled {
-    opacity: 0.4;
-    box-shadow: none;
-  }
-
-  .spacer {
-    flex: 1;
-  }
-
-  .error {
-    color: #b91c1c;
-    font-family: var(--mono);
-    font-size: 11px;
+  :global(body) {
+    overflow: hidden;
   }
 
   .body {
@@ -381,9 +328,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 24px;
+    padding: 16px;
     overflow: auto;
     background: var(--bg);
+    min-width: 0;
   }
 
   .preview img {
@@ -396,36 +344,115 @@
   .hint {
     color: #71717a;
     font-family: var(--mono);
-    font-size: 11px;
+    font-size: 10.5px;
     text-transform: uppercase;
     letter-spacing: 0.04em;
   }
 
-  .stack {
-    width: 290px;
+  /* ---------- right panel: everything lives here, stacked ---------- */
+  .panel {
+    width: 240px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
     border-left: 3px solid var(--panel-border);
     background: var(--panel);
     color: var(--panel-ink);
-    padding: 14px;
-    overflow-y: auto;
   }
 
-  .stack h2 {
-    margin: 0 0 12px;
-    font-family: var(--mono);
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--panel-ink);
+  .panel-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 10px;
     border-bottom: 2px solid var(--panel-border);
-    padding-bottom: 6px;
+    flex-shrink: 0;
+  }
+
+  .logo {
+    width: 20px;
+    height: 20px;
+    image-rendering: pixelated;
+    flex-shrink: 0;
+  }
+
+  .wordmark {
+    font-family: var(--mono);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 12px;
+  }
+
+  .panel-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px;
+    flex-shrink: 0;
+  }
+
+  .panel-actions-bottom {
+    border-top: 2px solid var(--panel-border);
+  }
+
+  .add-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  button,
+  select {
+    width: 100%;
+    padding: 6px 8px;
+    background: var(--panel-card);
+    color: var(--panel-ink);
+    border: 2px solid var(--panel-border);
+    border-radius: 0;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    box-shadow: 2px 2px 0 var(--panel-border);
+  }
+
+  button:not(:disabled):hover {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  button:not(:disabled):active {
+    box-shadow: none;
+    transform: translate(2px, 2px);
+  }
+
+  button:disabled {
+    opacity: 0.4;
+    box-shadow: none;
+  }
+
+  .error {
+    color: #b91c1c;
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 6px 10px 10px;
+    margin: 0;
+  }
+
+  .stack {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 0 10px 10px;
   }
 
   .node {
     border: 2px solid var(--panel-border);
     border-radius: 0;
-    padding: 8px;
-    margin-bottom: 10px;
+    padding: 7px;
+    margin-bottom: 8px;
     background: var(--panel-card);
     box-shadow: 3px 3px 0 var(--panel-border);
   }
@@ -437,14 +464,14 @@
   .node-header {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
     margin-bottom: 6px;
   }
 
   .node-name {
     flex: 1;
     font-family: var(--mono);
-    font-size: 11px;
+    font-size: 10.5px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.02em;
@@ -455,8 +482,8 @@
   }
 
   .icon-btn {
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     line-height: 1;
     padding: 0;
     background: var(--panel);
@@ -464,6 +491,7 @@
     border: 2px solid var(--panel-border);
     border-radius: 0;
     font-family: var(--mono);
+    box-shadow: none;
   }
 
   .icon-btn:not(:disabled):hover {
@@ -478,10 +506,10 @@
   .param {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    margin-bottom: 10px;
+    gap: 3px;
+    margin-bottom: 8px;
     font-family: var(--mono);
-    font-size: 11px;
+    font-size: 10.5px;
   }
 
   .param:last-child {
@@ -492,7 +520,7 @@
     color: var(--panel-ink-dim);
     text-transform: uppercase;
     letter-spacing: 0.03em;
-    font-size: 10px;
+    font-size: 9.5px;
   }
 
   .param input[type='range'] {
@@ -501,13 +529,8 @@
   }
 
   .param select {
-    background: var(--panel);
-    color: var(--panel-ink);
-    border: 2px solid var(--panel-border);
-    border-radius: 0;
+    box-shadow: none;
     padding: 3px 6px;
-    font-family: var(--mono);
-    font-size: 11px;
   }
 
   .value {

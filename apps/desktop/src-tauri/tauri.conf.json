@@ -13,9 +13,10 @@
     "windows": [
       {
         "title": "Ditherwave",
-        "width": 800,
+        "width": 820,
         "height": 600,
-        "resizable": true,
+        "resizable": false,
+        "maximizable": false,
         "fullscreen": false
       }
     ],
