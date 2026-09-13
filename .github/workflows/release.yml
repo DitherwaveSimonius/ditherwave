@@ -1,0 +1,48 @@
+name: Release
+
+# Builds the desktop app on macOS and Windows and attaches both installers
+# (a .dmg and an .exe) to one GitHub Release — separate downloads per
+# platform. Triggered by pushing a version tag, e.g.:
+#   git tag v0.1.0 && git push origin v0.1.0
+#
+# The release is created as a DRAFT so it can be reviewed (edit the notes,
+# check both installers are attached) before publishing it on the Releases
+# page — this workflow never publishes it live on its own.
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [macos-latest, windows-latest]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/desktop/src-tauri -> ../../target
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+          cache-dependency-path: apps/desktop/package-lock.json
+      - run: npm ci
+        working-directory: apps/desktop
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: apps/desktop
+          tagName: ${{ github.ref_name }}
+          releaseName: "Ditherwave ${{ github.ref_name }}"
+          releaseDraft: true
+          prerelease: false
