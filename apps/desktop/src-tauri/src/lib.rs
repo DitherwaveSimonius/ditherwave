@@ -199,6 +199,21 @@ fn list_effects(state: tauri::State<AppState>) -> Vec<EffectDescriptor> {
         .collect()
 }
 
+/// Bundled into the binary at compile time so the app has something to show
+/// before the user opens their own photo — see branding/generate-demo for
+/// how it was produced.
+const DEMO_IMAGE: &[u8] = include_bytes!("../assets/demo.png");
+
+#[tauri::command]
+fn load_demo_image(state: tauri::State<AppState>) -> Result<ImagePayload, String> {
+    let working = io::open_raster_bytes(DEMO_IMAGE).map_err(|e| e.to_string())?;
+    let payload = to_payload(&working)?;
+    *state.original.lock().unwrap() = Some(working);
+    *state.stack.lock().unwrap() = EffectStack::default();
+    state.cache.lock().unwrap().clear();
+    Ok(payload)
+}
+
 #[tauri::command]
 fn open_image(path: String, state: tauri::State<AppState>) -> Result<ImagePayload, String> {
     let path = Path::new(&path);
@@ -318,6 +333,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             list_effects,
+            load_demo_image,
             open_image,
             set_stack,
             export_image,

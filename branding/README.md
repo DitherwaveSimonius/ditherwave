@@ -1,17 +1,13 @@
 # Branding
 
-`logo.png` (1024x1024) is the source icon for the whole project: app icons,
-window icon, and website/favicon assets are all generated from it.
+Two generated assets, both produced by small standalone Rust tools rather than
+hand-edited images — regenerating them after a design tweak is a `cargo run` away.
 
-## Design
+## `logo.png` (1024x1024)
 
-A Bayer-dithered violet-to-black vertical gradient (the same 4x4 ordered-dithering
-matrix `ditherwave-core`'s `ordered::Bayer4x4` effect uses) behind a cream
-equalizer/waveform silhouette — built at a 32x32 "pixel grid" and upscaled with
-nearest-neighbor, for the chunky, visibly-pixelated look the whole app's design
-takes inspiration from.
-
-## Regenerating
+The app icon / window icon / favicon source: individual waveform bars, each
+filled with a Bayer-dithered violet-to-cream gradient, on a transparent
+background — freestanding, no card/background box behind it.
 
 ```bash
 cd branding/generate-logo
@@ -33,3 +29,20 @@ And update the web favicon:
 ```bash
 sips -Z 64 branding/logo.png --out apps/desktop/public/favicon.png
 ```
+
+## `demo.png` (800x600)
+
+The image the desktop app loads by default on first launch (before the user
+opens their own photo) — the logo mark and the "DITHERWAVE" wordmark (a
+hand-drawn 5x7 pixel font), large and centered, in front of a deliberately
+quiet Bayer-dithered violet-to-black backdrop. The brand is the subject; the
+backdrop is just atmosphere.
+
+```bash
+cd branding/generate-demo
+cargo run --release -- ../demo.png
+cp ../demo.png ../../apps/desktop/src-tauri/assets/demo.png
+```
+
+The app embeds this file at compile time (`include_bytes!`), so a rebuild is
+needed after regenerating it.

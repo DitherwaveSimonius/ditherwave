@@ -1,0 +1,12 @@
+[package]
+name = "generate-demo"
+version = "0.1.0"
+edition = "2021"
+
+# Deliberately its own workspace root (empty [workspace] table) — a one-off
+# branding asset tool, not part of the app, so `cargo build --workspace` at
+# the repo root doesn't try to resolve or build it. See ../generate-logo.
+[workspace]
+
+[dependencies]
+image = { version = "0.25", default-features = false, features = ["png"] }

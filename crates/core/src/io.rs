@@ -7,23 +7,25 @@ pub enum IoError {
     Image(#[from] image::ImageError),
 }
 
+fn from_dynamic_image(decoded: image::DynamicImage) -> WorkingImage {
+    let decoded = decoded.to_rgba8();
+    let (width, height) = decoded.dimensions();
+    let pixels = decoded.into_raw().into_iter().map(|b| b as f32 / 255.0).collect();
+    WorkingImage { width, height, color_space: ColorSpace::Srgb, pixels }
+}
+
 /// Decodes a raster file (PNG, JPEG, ...) into a [`WorkingImage`]. Pixels are kept
 /// gamma-encoded (`ColorSpace::Srgb`), matching what classic dithering algorithms
 /// (Floyd-Steinberg and friends) expect.
 pub fn open_raster(path: &Path) -> Result<WorkingImage, IoError> {
-    let decoded = image::open(path)?.to_rgba8();
-    let (width, height) = decoded.dimensions();
-    let pixels = decoded
-        .into_raw()
-        .into_iter()
-        .map(|b| b as f32 / 255.0)
-        .collect();
-    Ok(WorkingImage {
-        width,
-        height,
-        color_space: ColorSpace::Srgb,
-        pixels,
-    })
+    Ok(from_dynamic_image(image::open(path)?))
+}
+
+/// Same as [`open_raster`], but decodes from an in-memory buffer instead of a
+/// file — used for the app's bundled demo image, which is compiled into the
+/// binary via `include_bytes!` rather than read from disk.
+pub fn open_raster_bytes(bytes: &[u8]) -> Result<WorkingImage, IoError> {
+    Ok(from_dynamic_image(image::load_from_memory(bytes)?))
 }
 
 /// Encodes a [`WorkingImage`] to a raster file, format chosen by `path`'s extension.

@@ -54,6 +54,9 @@
     try {
       effects = await invoke<EffectDescriptor[]>('list_effects')
       if (effects.length > 0) addEffectKey = effects[0].key
+      const demo = await invoke<ImagePayload>('load_demo_image')
+      previewSrc = `data:image/png;base64,${demo.pngBase64}`
+      hasImage = true
     } catch (e) {
       error = String(e)
     }
